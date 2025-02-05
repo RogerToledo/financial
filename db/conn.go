@@ -8,18 +8,20 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func Connect() (*sql.DB, error) {
-	sc := config.DB()
 
-	conn, err := sql.Open("postgres", sc.StringConn)
+
+func NewDB() (*sql.DB, error) {
+	connString := config.DB().StringConn
+
+	conn, err := sql.Open("postgres", connString)
 	if err != nil {
 		return nil, fmt.Errorf("Error connecting to database: %v", err)
 	}
 
-	err = conn.Ping()
-	if err != nil {
+	if err = conn.Ping(); err != nil {
 		return nil, fmt.Errorf("Error pinging database: %v", err)
 	}
 
 	return conn, nil
+
 }
