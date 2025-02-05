@@ -11,7 +11,7 @@ import (
 	"github.com/me/financial/repository"
 )
 
-func CreatePerson(w http.ResponseWriter, r *http.Request) {
+func CreatePerson(rep *repository.Repository , w http.ResponseWriter, r *http.Request) {
 	var (
 		person model.Person
 		resp map[string]any
@@ -24,7 +24,7 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := repository.CreatePerson(person)
+	id, err := rep.Person.CreatePerson(person)
 
 	if err != nil {
 		resp = map[string]any{
@@ -42,13 +42,13 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func UpdatePerson(w http.ResponseWriter, r *http.Request) {
+func UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var (
 		resp map[string]any
 		person model.Person
 	)
 
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		log.Printf("Error converting ID to integer: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -62,7 +62,7 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := repository.UpdatePerson(id, person)
+	rows, err := rep.Person.UpdatePerson(id, person)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -82,24 +82,24 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func DeletePerson(w http.ResponseWriter, r *http.Request) {
+func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var resp map[string]any
 
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		log.Printf("Error converting ID to integer: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	rows, err := repository.DeletePerson(id)
+	row, err := rep.Person.DeletePerson(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if rows > 1 {
-		log.Printf("More than one row affected: %d", rows)
+	if row > 1 {
+		log.Printf("More than one row affected: %d", row)
 		return
 	}
 
@@ -112,7 +112,7 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func FindPersonByID(w http.ResponseWriter, r *http.Request) {
+func FindPersonByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var resp map[string]any
 
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -122,7 +122,7 @@ func FindPersonByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	person, err := repository.FindPersonByID(id)
+	person, err := rep.Person.FindPersonByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -137,10 +137,30 @@ func FindPersonByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-func FindAllPersons(w http.ResponseWriter, r *http.Request) {
+func FindPersonByName(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var resp map[string]any
 
-	persons, err := repository.FindAllPersons()
+	name := r.PathValue("name")
+	
+	person, err := rep.Person.FindPersonByName(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp = map[string]any{
+		"StatusCode": http.StatusOK,
+		"Person": person,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func FindAllPersons(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+	var resp map[string]any
+
+	persons, err := rep.Person.FindAllPersons()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
