@@ -24,7 +24,7 @@ func (r repositoryPurchaseType) CreatePurchaseType(p model.PurchaseType) (int, e
 
 	var id int
 	if err = stmt.QueryRow(p.Name).Scan(&id); err != nil {
-		return 0, fmt.Errorf("error trying insert payment type: %v", err)
+		return 0, fmt.Errorf("error trying insert purchase type type: %v", err)
 	}
 
 	return id, nil

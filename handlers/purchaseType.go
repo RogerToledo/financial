@@ -30,7 +30,7 @@ func CreatePurchaseType(rep *repository.Repository , w http.ResponseWriter, r *h
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Porchase Type created with ID: %d", id), http.StatusCreated)
+	HTTPResponse(w, fmt.Sprintf("Purchase Type created with ID: %d", id), http.StatusCreated)
 }
 
 func UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
@@ -44,7 +44,7 @@ func UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 
 	err = json.NewDecoder(r.Body).Decode(&purchaseType)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error decoding Porchase Type: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error decoding Purchase Type: %v", err), http.StatusBadRequest)
 		return
 	}
 
@@ -58,7 +58,7 @@ func UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Porchase Type updated with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprintf("Purchase Type updated with ID: %d", id), http.StatusOK)
 }
 
 func DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
@@ -74,7 +74,7 @@ func DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Payment Type deleted with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprintf("Purchase Type deleted with ID: %d", id), http.StatusOK)
 }
 
 func FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
