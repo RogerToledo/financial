@@ -42,7 +42,7 @@ func (r repositoryPerson) UpdatePerson(id int, p model.Person) error {
 	}
 
 	if err != nil && err == sql.ErrNoRows {
-		return fmt.Errorf("does not exist credit card with this id")
+		return fmt.Errorf("does not exist person with this id")
 	}
 
 	return nil
