@@ -81,22 +81,6 @@ func (r repositoryPerson) DeletePerson(id int) (int64, error) {
 	return rowAffected, nil
 }
 
-func (r repositoryPerson) FindPersonByID(id int) (model.Person, error) {
-	query := "SELECT id, name FROM financial.person WHERE id = $1"
-
-	stmt, err := r.db.Prepare(query)
-	if err != nil {
-		return model.Person{}, fmt.Errorf("error trying prepare statment: %v", err)
-	}
-
-	var p model.Person
-	if err = stmt.QueryRow(id).Scan(&p.ID, &p.Name); err != nil {
-		return model.Person{}, fmt.Errorf("error trying find person: %v", err)
-	}
-
-	return p, nil
-}
-
 func (r repositoryPerson) FindPersonByName(name string) (model.Person, error) {
 	query := "SELECT id, name FROM financial.person WHERE name = $1"
 	

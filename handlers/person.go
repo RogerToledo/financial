@@ -25,7 +25,6 @@ func CreatePerson(rep *repository.Repository , w http.ResponseWriter, r *http.Re
 	}
 
 	id, err := rep.Person.CreatePerson(person)
-
 	if err != nil {
 		resp = map[string]any{
 			"StatusCode": http.StatusInternalServerError,
@@ -106,31 +105,6 @@ func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Req
 	resp = map[string]any{
 		"StatusCode": http.StatusOK,
 		"Message": fmt.Sprintf("Person deleted with ID: %d", id),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
-}
-
-func FindPersonByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	var resp map[string]any
-
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		log.Printf("Error converting ID to integer: %v", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	person, err := rep.Person.FindPersonByID(id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	resp = map[string]any{
-		"StatusCode": http.StatusOK,
-		"Person": person,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
