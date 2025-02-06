@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/me/financial/model"
 )
@@ -31,54 +30,42 @@ func (r repositoryPerson) CreatePerson(p model.Person) (int, error) {
 	return id, nil
 }
 
-func (r repositoryPerson) UpdatePerson(id int, p model.Person) (int64, error) {
-	var rows sql.Result 
-
+func (r repositoryPerson) UpdatePerson(id int, p model.Person) error {
 	query := `UPDATE financial.person SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	if rows, err = stmt.Exec(p.Name, id); err != nil {
-		return 0, fmt.Errorf("error trying update person: %v", err)
+	if _, err = stmt.Exec(p.Name, id); err != nil && err != sql.ErrNoRows {
+		return fmt.Errorf("error trying update person: %v", err)
 	}
 
-	rowAffected, err := rows.RowsAffected()
-	if err != nil {
-		return 0, fmt.Errorf("error trying get rows affected: %v", err)
+	if err != nil && err == sql.ErrNoRows {
+		return fmt.Errorf("does not exist credit card with this id")
 	}
 
-	if rowAffected > 1 {
-		log.Printf("error trying update person: more than one person updated: %v", rows)
-	}
-
-	return rowAffected, nil
+	return nil
 }
 
-func (r repositoryPerson) DeletePerson(id int) (int64, error) {
+func (r repositoryPerson) DeletePerson(id int) error {
 	query := `DELETE FROM financial.person WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	row, err := stmt.Exec(id)
-	if err != nil {
-		return 0, fmt.Errorf("error trying delete person: %v", err)
+	_, err = stmt.Exec(id)
+	if err != nil && err != sql.ErrNoRows {
+		return fmt.Errorf("error trying delete person: %v", err)
 	}
 
-	rowAffected, err := row.RowsAffected()
-	if err != nil {
-		return 0, fmt.Errorf("error trying get rows affected: %v", err)
+	if err != nil && err == sql.ErrNoRows {
+		return fmt.Errorf("does not exist person with this id")
 	}
 
-	if rowAffected > 1 {
-		log.Printf("error trying delete person: more than one person deleted: %v", row)
-	}
-
-	return rowAffected, nil
+	return nil
 }
 
 func (r repositoryPerson) FindPersonByName(name string) (model.Person, error) {
@@ -90,8 +77,12 @@ func (r repositoryPerson) FindPersonByName(name string) (model.Person, error) {
 	}
 
 	var p model.Person
-	if err = stmt.QueryRow(name).Scan(&p.ID, &p.Name); err != nil {
+	if err = stmt.QueryRow(name).Scan(&p.ID, &p.Name); err != nil && err != sql.ErrNoRows {
 		return model.Person{}, fmt.Errorf("error trying find person: %v", err)
+	}
+
+	if err != nil && err == sql.ErrNoRows {
+		return model.Person{}, fmt.Errorf("does not exist person with this name")
 	}
 
 	return p, nil
@@ -109,8 +100,12 @@ func (r repositoryPerson) FindAllPersons() ([]model.Person, error) {
 
 	for rows.Next() {
 		var p model.Person
-		if err = rows.Scan(&p.ID, &p.Name); err != nil {
+		if err = rows.Scan(&p.ID, &p.Name); err != nil && err != sql.ErrNoRows {
 			return []model.Person{}, fmt.Errorf("error trying scan person: %v", err)
+		}
+
+		if err != nil && err == sql.ErrNoRows {
+			return []model.Person{}, fmt.Errorf("does not exist person with this name")
 		}
 
 		persons = append(persons, p)

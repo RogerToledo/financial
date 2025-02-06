@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -12,139 +11,90 @@ import (
 )
 
 func CreatePerson(rep *repository.Repository , w http.ResponseWriter, r *http.Request) {
-	var (
-		person model.Person
-		resp map[string]any
-	)	
+	var person model.Person
 
 	err := json.NewDecoder(r.Body).Decode(&person)
 	if err != nil {
-		log.Printf("Error decoding person: %v", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error decoding person: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if person.Name == "" {
+		http.Error(w, fmt.Sprint("Person is required"), http.StatusBadRequest)
 		return
 	}
 
 	id, err := rep.Person.CreatePerson(person)
 	if err != nil {
-		resp = map[string]any{
-			"StatusCode": http.StatusInternalServerError,
-			"Message": fmt.Sprintf("Error creating person: %v", err),
-		}
-	} else {
-		resp = map[string]any{
-			"StatusCode": http.StatusOK,
-			"Message": fmt.Sprintf("Person created with ID: %d", id),
-		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	HTTPResponse(w, fmt.Sprintf("Person created with ID: %d", id), http.StatusCreated)
 }
 
 func UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	var (
-		resp map[string]any
-		person model.Person
-	)
+	var person model.Person
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		log.Printf("Error converting ID to integer: %v", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	err = json.NewDecoder(r.Body).Decode(&person)
 	if err != nil {
-		log.Printf("Error decoding person: %v", err)
+		http.Error(w, fmt.Sprintf("Error decoding credit card: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if person.Name == "" {
+		http.Error(w, fmt.Sprint("Name is required"), http.StatusBadRequest)
+		return
+	}
+
+	if err := rep.Person.UpdatePerson(id, person); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	rows, err := rep.Person.UpdatePerson(id, person)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if rows > 1 {
-		log.Printf("More than one row affected: %d", rows)
-		return
-	}
-
-	resp = map[string]any{
-		"StatusCode": http.StatusOK,
-		"Message": fmt.Sprintf("Person updated with ID: %d", id),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	HTTPResponse(w, fmt.Sprintf("Person updated with ID: %d", id), http.StatusOK)
 }
 
 func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	var resp map[string]any
-
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		log.Printf("Error converting ID to integer: %v", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
+		return		
 	}
 
-	row, err := rep.Person.DeletePerson(id)
+	err = rep.Person.DeletePerson(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if row > 1 {
-		log.Printf("More than one row affected: %d", row)
-		return
-	}
-
-	resp = map[string]any{
-		"StatusCode": http.StatusOK,
-		"Message": fmt.Sprintf("Person deleted with ID: %d", id),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	HTTPResponse(w, fmt.Sprintf("Person deleted with ID: %d", id), http.StatusOK)
 }
 
 func FindPersonByName(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	var resp map[string]any
-
 	name := r.PathValue("name")
 	
 	person, err := rep.Person.FindPersonByName(name)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	resp = map[string]any{
-		"StatusCode": http.StatusOK,
-		"Person": person,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	HTTPResponse(w, person, http.StatusOK)
 }
 
 func FindAllPersons(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	var resp map[string]any
-
 	persons, err := rep.Person.FindAllPersons()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp = map[string]any{
-		"StatusCode": http.StatusOK,
-		"Persons": persons,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	HTTPResponse(w, persons, http.StatusOK)
 }
