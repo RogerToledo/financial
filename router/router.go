@@ -24,6 +24,7 @@ func InitializeRoutes() {
 	CreditCardRoutes(mux, rep)
 	PaymentTypeRoutes(mux, rep)
 	PurchaseTypeRoutes(mux, rep)
+	PurchaseRoutes(mux, rep)
 
 	log.Printf("Server running on port %s", config.ServerPort())
 	http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort()), mux)
