@@ -5,7 +5,7 @@
 -- DROP TABLE financial.purchase;
 
 CREATE TABLE financial.purchase (
-	id serial4 NOT NULL,
+	id uuid NOT NULL,
 	description varchar(150) NULL,
 	amount numeric(10, 2) NOT NULL,
 	"date" date NOT NULL,
