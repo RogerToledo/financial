@@ -27,6 +27,10 @@ func (r repositoryPurchaseType) Create(p model.PurchaseType) (int, error) {
 		return 0, fmt.Errorf("error trying insert purchase type type: %v", err)
 	}
 
+	if err := stmt.Close(); err != nil {
+		return 0, fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return id, nil
 }
 
@@ -43,6 +47,10 @@ func (r repositoryPurchaseType) Update(id int, pt model.PurchaseType) error {
 
 	if err != nil && err == sql.ErrNoRows {
 		return fmt.Errorf("does not exist purchase type with this id")
+	}
+
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close statment: %v", err)
 	}
 
 	return nil
@@ -65,6 +73,10 @@ func (r repositoryPurchaseType) Delete(id int) error {
 		return fmt.Errorf("does not exist purchase type with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return nil
 }
 
@@ -85,11 +97,15 @@ func (r repositoryPurchaseType) FindByID(id int) (model.PurchaseType, error) {
 		return model.PurchaseType{}, fmt.Errorf("does not exist purchase type with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return model.PurchaseType{}, fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return pt, nil
 }
 
 func (r repositoryPurchaseType) FindAll() ([]model.PurchaseType, error) {
-	query := "SELECT id, name FROM financial.purchase_type"
+	query := "SELECT id, name FROM financial.purchase_type ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -106,6 +122,10 @@ func (r repositoryPurchaseType) FindAll() ([]model.PurchaseType, error) {
 
 		if err != nil && err == sql.ErrNoRows {
 			return []model.PurchaseType{}, fmt.Errorf("does not exist purchase type with this name")
+		}
+
+		if err := rows.Close(); err != nil {
+			return []model.PurchaseType{}, fmt.Errorf("error trying close rows: %v", err)
 		}
 
 		purchases = append(purchases, pt)

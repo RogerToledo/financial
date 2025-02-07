@@ -27,6 +27,10 @@ func (r repositoryCreditCard) Create(cc model.CreditCard) (int, error) {
 		return 0, fmt.Errorf("error trying insert credit card: %v", err)
 	}
 
+	if err := stmt.Close(); err != nil {
+		return 0, fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return id, nil
 }
 
@@ -43,6 +47,10 @@ func (r repositoryCreditCard) Update(id int, cc model.CreditCard) error {
 
 	if err != nil && err == sql.ErrNoRows {
 		return fmt.Errorf("does not exist credit card with this id")
+	}
+
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close statment: %v", err)
 	}
 
 	return nil
@@ -65,6 +73,10 @@ func (r repositoryCreditCard) Delete(id int) error {
 		return fmt.Errorf("does not exist credit card with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return nil
 }
 
@@ -85,11 +97,15 @@ func (r repositoryCreditCard) FindByOwner(owner string) (model.CreditCard, error
 		return model.CreditCard{}, fmt.Errorf("does not exist this owner %s", owner)
 	}
 
+	if err := stmt.Close(); err != nil {
+		return model.CreditCard{}, fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return cc, nil
 }
 
 func (r repositoryCreditCard) FindAll() ([]model.CreditCard, error) {
-	query := "SELECT id, owner FROM financial.credit_card"
+	query := "SELECT id, owner FROM financial.credit_card order by owner"
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -109,6 +125,10 @@ func (r repositoryCreditCard) FindAll() ([]model.CreditCard, error) {
 		}
 
 		creditCards = append(creditCards, cc)
+	}
+
+	if rows.Close(); err != nil {
+		return []model.CreditCard{}, fmt.Errorf("error trying close rows: %v", err)
 	}
 
 	return creditCards, nil

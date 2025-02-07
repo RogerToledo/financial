@@ -27,6 +27,10 @@ func (r repositoryPerson) Create(p model.Person) (int, error) {
 		return 0, fmt.Errorf("error trying insert person: %v", err)
 	}
 
+	if err := stmt.Close(); err != nil {
+		return 0, fmt.Errorf("error trying close stmt: %v", err)
+	}
+
 	return id, nil
 }
 
@@ -43,6 +47,10 @@ func (r repositoryPerson) Update(id int, p model.Person) error {
 
 	if err != nil && err == sql.ErrNoRows {
 		return fmt.Errorf("does not exist person with this id")
+	}
+
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close stmt: %v", err)
 	}
 
 	return nil
@@ -65,6 +73,10 @@ func (r repositoryPerson) Delete(id int) error {
 		return fmt.Errorf("does not exist person with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close stmt: %v", err)
+	}
+
 	return nil
 }
 
@@ -85,11 +97,15 @@ func (r repositoryPerson) FindByName(name string) (model.Person, error) {
 		return model.Person{}, fmt.Errorf("does not exist person with this name")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return model.Person{}, fmt.Errorf("error trying close stmt: %v", err)
+	}
+
 	return p, nil
 }
 
 func (r repositoryPerson) FindAll() ([]model.Person, error) {
-	query := "SELECT id, name FROM financial.person"
+	query := "SELECT id, name FROM financial.person ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -106,6 +122,10 @@ func (r repositoryPerson) FindAll() ([]model.Person, error) {
 
 		if err != nil && err == sql.ErrNoRows {
 			return []model.Person{}, fmt.Errorf("does not exist person with this name")
+		}
+
+		if err := rows.Close(); err != nil {
+			return []model.Person{}, fmt.Errorf("error trying close rows: %v", err)
 		}
 
 		persons = append(persons, p)

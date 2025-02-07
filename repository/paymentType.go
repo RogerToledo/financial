@@ -27,6 +27,10 @@ func (r repositoryPaymentType) Create(p model.PaymentType) (int, error) {
 		return 0, fmt.Errorf("error trying insert payment type: %v", err)
 	}
 
+	if err := stmt.Close(); err != nil {
+		return 0, fmt.Errorf("error trying close stmt: %v", err)
+	}
+
 	return id, nil
 }
 
@@ -43,6 +47,10 @@ func (r repositoryPaymentType) Update(id int, pt model.PaymentType) error {
 
 	if err != nil && err == sql.ErrNoRows {
 		return fmt.Errorf("does not exist payment type with this id")
+	}
+
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close stmt: %v", err)
 	}
 
 	return nil
@@ -65,6 +73,10 @@ func (r repositoryPaymentType) Delete(id int) error {
 		return fmt.Errorf("does not exist payment type with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close stmt: %v", err)
+	}
+
 	return nil
 }
 
@@ -85,11 +97,15 @@ func (r repositoryPaymentType) FindByID(id int) (model.PaymentType, error) {
 		return model.PaymentType{}, fmt.Errorf("does not exist payment type with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return model.PaymentType{}, fmt.Errorf("error trying close stmt: %v", err)
+	}
+
 	return pt, nil
 }
 
 func (r repositoryPaymentType) FindAll() ([]model.PaymentType, error) {
-	query := "SELECT id, name FROM financial.payment_type"
+	query := "SELECT id, name FROM financial.payment_type ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -109,6 +125,10 @@ func (r repositoryPaymentType) FindAll() ([]model.PaymentType, error) {
 		}
 
 		payments = append(payments, pt)
+	}
+
+	if err := rows.Close(); err != nil {
+		return []model.PaymentType{}, fmt.Errorf("error trying close rows: %v", err)
 	}
 
 	return payments, nil
