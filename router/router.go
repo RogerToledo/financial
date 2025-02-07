@@ -15,6 +15,11 @@ func InitializeRoutes() {
 	if err != nil {
 		panic(err)
 	}
+	defer func () {
+		if err := db.Close(); err != nil {
+			log.Printf("error trying close database: %v", err)
+		}
+	}()	
 
 	rep := repository.NewRepository(db)
 
