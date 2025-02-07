@@ -23,7 +23,6 @@ type Purchase struct {
 type PurchaseResponse struct {
 	ID                int     `json:"id"`	
 	Description       string  `json:"description"`
-	Type 	          string  `json:"type"`
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
 	InstallmentNumber int     `json:"installment_number"`
@@ -33,6 +32,11 @@ type PurchaseResponse struct {
 	CreditCard	      string  `json:"credit_card"`
 	PurchaseType      string  `json:"purchase_type"`
 	Person	          string  `json:"person"`
+}
+
+type PurchaseResponseDate struct {
+	Responses []PurchaseResponse `json:"responses"`
+	Total     float64            `json:"total"`
 }
 
 func (p *Purchase) Validate() (bool, string) {

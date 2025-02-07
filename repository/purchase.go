@@ -50,6 +50,10 @@ func (r repositoryPurchase) Create(p model.Purchase) (int, error) {
 		return 0, fmt.Errorf("error trying insert purchase type: %v", err)
 	}
 
+	if err := stmt.Close(); err != nil {
+		return 0, fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return id, nil
 }
 
@@ -91,6 +95,10 @@ func (r repositoryPurchase) Update(id int, p model.Purchase) error {
 		return fmt.Errorf("does not exist purchase with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return nil
 }
 
@@ -109,6 +117,10 @@ func (r repositoryPurchase) Delete(id int) error {
 
 	if err != nil && err == sql.ErrNoRows {
 		return fmt.Errorf("does not exist purchase with this id")
+	}
+
+	if err := stmt.Close(); err != nil {
+		return fmt.Errorf("error trying close statment: %v", err)
 	}
 
 	return nil
@@ -164,7 +176,164 @@ func (r repositoryPurchase) FindByID(id int) (model.PurchaseResponse, error) {
 		return model.PurchaseResponse{}, fmt.Errorf("does not exist purchase with this id")
 	}
 
+	if err := stmt.Close(); err != nil {
+		return model.PurchaseResponse{}, fmt.Errorf("error trying close statment: %v", err)
+	}
+
 	return pt, nil
+}
+
+func (r repositoryPurchase) FindByDate(date string) (model.PurchaseResponseDate, error) {
+	var (
+		total float64
+		purchases []model.PurchaseResponse
+		responses model.PurchaseResponseDate
+	)	
+
+	query := `SELECT 
+				p.id, 
+				p.description, 
+				p.amount, 
+				p."date", 
+				p.installment_number, 
+				p.installment, 
+				p.place, 
+				pt."name",
+				purt."name", 
+				cc."owner", 
+				per."name"
+			FROM financial.purchase p
+			inner join financial.payment_type pt 
+				on p.id_payment_type = pt.id 
+			inner join financial.purchase_type purt	
+				on p.id_purchase_type = purt.id 
+			inner join financial.credit_card cc	
+				on p.id_credit_card = cc.id
+			inner join financial.person per	
+				on p.id_person = per.id 
+			WHERE "date" = $1;`
+
+	rows, err := r.db.Query(query, date)
+	if err != nil {
+		return model.PurchaseResponseDate{}, fmt.Errorf("error trying find purchase by date: %v", err)
+	}
+
+	for rows.Next() {
+		var p model.PurchaseResponse
+		if err = rows.Scan(
+			&p.ID,
+			&p.Description,
+			&p.Amount,
+			&p.Date,
+			&p.InstallmentNumber,
+			&p.Installment,
+			&p.Place,
+			&p.PaymentType,
+			&p.PurchaseType,
+			&p.CreditCard,
+			&p.Person,
+		    ); err != nil && err != sql.ErrNoRows {
+			return model.PurchaseResponseDate{}, fmt.Errorf("error trying scan purchase: %v", err)
+		}
+
+		if err != nil && err == sql.ErrNoRows {
+			return model.PurchaseResponseDate{}, fmt.Errorf("does not exist purchase  with this date")
+		}
+
+		purchases = append(purchases, p)
+	}
+
+	for _, pur := range purchases {
+		total += pur.Amount
+	}
+
+	responses = model.PurchaseResponseDate{
+		Responses: purchases,
+		Total: total,
+	}
+
+	if err := rows.Close(); err != nil {
+		return model.PurchaseResponseDate{}, fmt.Errorf("error trying close rows: %v", err)
+	}
+
+	return responses, nil
+}
+
+func (r repositoryPurchase) FindByMonth(date string) (model.PurchaseResponseDate, error){
+	var (
+		total float64
+		purchases []model.PurchaseResponse
+		responses model.PurchaseResponseDate
+	)	
+
+	query := `SELECT 
+				p.id, 
+				p.description, 
+				p.amount, 
+				p."date", 
+				p.installment_number, 
+				p.installment, 
+				p.place, 
+				pt."name",
+				purt."name", 
+				cc."owner", 
+				per."name"
+			FROM financial.purchase p
+			inner join financial.payment_type pt 
+				on p.id_payment_type = pt.id 
+			inner join financial.purchase_type purt	
+				on p.id_purchase_type = purt.id 
+			inner join financial.credit_card cc	
+				on p.id_credit_card = cc.id
+			inner join financial.person per	
+				on p.id_person = per.id 
+			WHERE to_char(p."date", 'YYYY-MM') = $1
+			ORDER BY p."date";`
+
+	rows, err := r.db.Query(query, date)
+	if err != nil {
+		return model.PurchaseResponseDate{}, fmt.Errorf("error trying find purchase by date: %v", err)
+	}
+
+	for rows.Next() {
+		var p model.PurchaseResponse
+		if err = rows.Scan(
+			&p.ID,
+			&p.Description,
+			&p.Amount,
+			&p.Date,
+			&p.InstallmentNumber,
+			&p.Installment,
+			&p.Place,
+			&p.PaymentType,
+			&p.PurchaseType,
+			&p.CreditCard,
+			&p.Person,
+		    ); err != nil && err != sql.ErrNoRows {
+			return model.PurchaseResponseDate{}, fmt.Errorf("error trying scan purchase: %v", err)
+		}
+
+		if err != nil && err == sql.ErrNoRows {
+			return model.PurchaseResponseDate{}, fmt.Errorf("does not exist purchase  with this date")
+		}
+
+		purchases = append(purchases, p)
+	}
+
+	for _, pur := range purchases {
+		total += pur.Amount
+	}
+
+	responses = model.PurchaseResponseDate{
+		Responses: purchases,
+		Total: total,
+	}
+
+	if err := rows.Close(); err != nil {
+		return model.PurchaseResponseDate{}, fmt.Errorf("error trying close rows: %v", err)
+	}
+
+	return responses, nil
 }
 
 func (r repositoryPurchase) FindAll() ([]model.Purchase, error) {
@@ -180,7 +349,8 @@ func (r repositoryPurchase) FindAll() ([]model.Purchase, error) {
 				id_purchase_type, 
 				id_credit_card, 
 				id_person
-			FROM financial.purchase;`
+			FROM financial.purchase
+			ORDER BY "date";`
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -208,10 +378,14 @@ func (r repositoryPurchase) FindAll() ([]model.Purchase, error) {
 		}
 
 		if err != nil && err == sql.ErrNoRows {
-			return []model.Purchase{}, fmt.Errorf("does not exist purchase  with this name")
+			return []model.Purchase{}, fmt.Errorf("does not exist purchase")
 		}
 
 		purchases = append(purchases, p)
+	}
+
+	if err := rows.Close(); err != nil {
+		return []model.Purchase{}, fmt.Errorf("error trying close rows: %v", err)
 	}
 
 	return purchases, nil

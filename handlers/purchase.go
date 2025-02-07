@@ -95,6 +95,18 @@ func FindPurchaseByID(rep *repository.Repository, w http.ResponseWriter, r *http
 	HTTPResponse(w, purchase, http.StatusOK)
 }
 
+func FindPurchaseByDate(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+	date := r.PathValue("date")
+	
+	purchases, err := rep.Purchase.FindByDate(date)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	HTTPResponse(w, purchases, http.StatusOK)
+}
+
 func FindAllPurchase(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	purchases, err := rep.Purchase.FindAll()
 	if err != nil {

@@ -26,6 +26,10 @@ func PurchaseRoutes(mux *http.ServeMux, rep *repository.Repository) {
 		handlers.FindPurchaseByID(rep, w, r)
 	})
 
+	mux.HandleFunc("GET /purchase/date/{date}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.FindPurchaseByDate(rep, w, r)
+	})
+
 	mux.HandleFunc("GET /purchase", func(w http.ResponseWriter, r *http.Request) {
 		handlers.FindAllPurchase(rep, w, r)
 	})
