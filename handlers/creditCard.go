@@ -23,7 +23,7 @@ func CreateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 		return
 	}
 
-	id, err := rep.CreditCard.CreateCreditCard(creditCard)
+	id, err := rep.CreditCard.Create(creditCard)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -52,7 +52,7 @@ func UpdateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 		return
 	}
 
-	if err = rep.CreditCard.UpdateCreditCard(id, creditCard); err != nil {
+	if err = rep.CreditCard.Update(id, creditCard); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -67,7 +67,7 @@ func DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 		return
 	}
 
-	err = rep.CreditCard.DeleteCreditCard(id)
+	err = rep.CreditCard.Delete(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,7 +79,7 @@ func DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 func FindCreditCardByOwner(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	owner := r.PathValue("owner")
 	
-	creditCard, err := rep.CreditCard.FindCreditCardByOwner(owner)
+	creditCard, err := rep.CreditCard.FindByOwner(owner)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -89,7 +89,7 @@ func FindCreditCardByOwner(rep *repository.Repository, w http.ResponseWriter, r 
 }	
 
 func FindAllCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	creditCard, err := rep.CreditCard.FindAllCreditCards()
+	creditCard, err := rep.CreditCard.FindAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

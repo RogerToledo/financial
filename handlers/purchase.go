@@ -25,7 +25,7 @@ func CreatePurchase(rep *repository.Repository , w http.ResponseWriter, r *http.
 		return
 	}
 
-	id, err := rep.Purchase.CreatePurchase(purchase)
+	id, err := rep.Purchase.Create(purchase)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -55,7 +55,7 @@ func UpdatePurchase(rep *repository.Repository, w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if err := rep.Purchase.UpdatePurchase(id, purchase); err != nil {
+	if err := rep.Purchase.Update(id, purchase); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -70,7 +70,7 @@ func DeletePurchase(rep *repository.Repository, w http.ResponseWriter, r *http.R
 		return		
 	}
 
-	err = rep.Purchase.DeletePurchase(id)
+	err = rep.Purchase.Delete(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -86,7 +86,7 @@ func FindPurchaseByID(rep *repository.Repository, w http.ResponseWriter, r *http
 		return		
 	}
 	
-	purchase, err := rep.Purchase.FindPurchaseByID(id)
+	purchase, err := rep.Purchase.FindByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -96,7 +96,7 @@ func FindPurchaseByID(rep *repository.Repository, w http.ResponseWriter, r *http
 }
 
 func FindAllPurchase(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	purchases, err := rep.Purchase.FindAllPurchase()
+	purchases, err := rep.Purchase.FindAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

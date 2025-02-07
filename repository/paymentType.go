@@ -15,7 +15,7 @@ func NewRepositoryPaymentType(db *sql.DB) *repositoryPaymentType {
 	return &repositoryPaymentType{db}
 }
 
-func (r repositoryPaymentType) CreatePaymentType(p model.PaymentType) (int, error) {
+func (r repositoryPaymentType) Create(p model.PaymentType) (int, error) {
 	query := `INSERT INTO financial.payment_type (name) VALUES ($1) RETURNING id`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r repositoryPaymentType) CreatePaymentType(p model.PaymentType) (int, erro
 	return id, nil
 }
 
-func (r repositoryPaymentType) UpdatePaymentType(id int, pt model.PaymentType) error {
+func (r repositoryPaymentType) Update(id int, pt model.PaymentType) error {
 	query := `UPDATE financial.payment_type SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -48,7 +48,7 @@ func (r repositoryPaymentType) UpdatePaymentType(id int, pt model.PaymentType) e
 	return nil
 }
 
-func (r repositoryPaymentType) DeletePaymentType(id int) error {
+func (r repositoryPaymentType) Delete(id int) error {
 	query := `DELETE FROM financial.payment_type WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -68,7 +68,7 @@ func (r repositoryPaymentType) DeletePaymentType(id int) error {
 	return nil
 }
 
-func (r repositoryPaymentType) FindPaymentTypeByID(id int) (model.PaymentType, error) {
+func (r repositoryPaymentType) FindByID(id int) (model.PaymentType, error) {
 	query := "SELECT id, name FROM financial.payment_type WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
@@ -88,7 +88,7 @@ func (r repositoryPaymentType) FindPaymentTypeByID(id int) (model.PaymentType, e
 	return pt, nil
 }
 
-func (r repositoryPaymentType) FindAllPaymentType() ([]model.PaymentType, error) {
+func (r repositoryPaymentType) FindAll() ([]model.PaymentType, error) {
 	query := "SELECT id, name FROM financial.payment_type"
 
 	rows, err := r.db.Query(query)

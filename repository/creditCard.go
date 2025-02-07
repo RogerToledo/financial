@@ -15,7 +15,7 @@ func NewRepositoryCreditCard(db *sql.DB) *repositoryCreditCard {
 	return &repositoryCreditCard{db}
 }
 
-func (r repositoryCreditCard) CreateCreditCard(cc model.CreditCard) (int, error) {
+func (r repositoryCreditCard) Create(cc model.CreditCard) (int, error) {
 	query := `INSERT INTO financial.credit_card (owner) VALUES ($1) RETURNING id`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r repositoryCreditCard) CreateCreditCard(cc model.CreditCard) (int, error)
 	return id, nil
 }
 
-func (r repositoryCreditCard) UpdateCreditCard(id int, cc model.CreditCard) error {
+func (r repositoryCreditCard) Update(id int, cc model.CreditCard) error {
 	query := `UPDATE financial.credit_card SET owner = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -48,7 +48,7 @@ func (r repositoryCreditCard) UpdateCreditCard(id int, cc model.CreditCard) erro
 	return nil
 }
 
-func (r repositoryCreditCard) DeleteCreditCard(id int) error {
+func (r repositoryCreditCard) Delete(id int) error {
 	query := `DELETE FROM financial.credit_card WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -68,7 +68,7 @@ func (r repositoryCreditCard) DeleteCreditCard(id int) error {
 	return nil
 }
 
-func (r repositoryCreditCard) FindCreditCardByOwner(owner string) (model.CreditCard, error) {
+func (r repositoryCreditCard) FindByOwner(owner string) (model.CreditCard, error) {
 	query := "SELECT id, owner FROM financial.credit_card WHERE owner = $1"
 	
 	stmt, err := r.db.Prepare(query)
@@ -88,7 +88,7 @@ func (r repositoryCreditCard) FindCreditCardByOwner(owner string) (model.CreditC
 	return cc, nil
 }
 
-func (r repositoryCreditCard) FindAllCreditCards() ([]model.CreditCard, error) {
+func (r repositoryCreditCard) FindAll() ([]model.CreditCard, error) {
 	query := "SELECT id, owner FROM financial.credit_card"
 
 	rows, err := r.db.Query(query)

@@ -15,7 +15,7 @@ func NewRepositoryPurchase(db *sql.DB) *repositoryPurchase {
 	return &repositoryPurchase{db}
 }
 
-func (r repositoryPurchase) CreatePurchase(p model.Purchase) (int, error) {
+func (r repositoryPurchase) Create(p model.Purchase) (int, error) {
 	query := `INSERT INTO financial.purchase(
 		description, 
 		amount, 
@@ -53,7 +53,7 @@ func (r repositoryPurchase) CreatePurchase(p model.Purchase) (int, error) {
 	return id, nil
 }
 
-func (r repositoryPurchase) UpdatePurchase(id int, p model.Purchase) error {
+func (r repositoryPurchase) Update(id int, p model.Purchase) error {
 	query := `UPDATE financial.purchase
 		SET description = $1, 
 			amount = $2, 
@@ -94,7 +94,7 @@ func (r repositoryPurchase) UpdatePurchase(id int, p model.Purchase) error {
 	return nil
 }
 
-func (r repositoryPurchase) DeletePurchase(id int) error {
+func (r repositoryPurchase) Delete(id int) error {
 	query := `DELETE FROM financial.purchase WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -114,7 +114,7 @@ func (r repositoryPurchase) DeletePurchase(id int) error {
 	return nil
 }
 
-func (r repositoryPurchase) FindPurchaseByID(id int) (model.PurchaseResponse, error) {
+func (r repositoryPurchase) FindByID(id int) (model.PurchaseResponse, error) {
 	query := `SELECT 
 				p.id, 
 				p.description, 
@@ -167,7 +167,7 @@ func (r repositoryPurchase) FindPurchaseByID(id int) (model.PurchaseResponse, er
 	return pt, nil
 }
 
-func (r repositoryPurchase) FindAllPurchase() ([]model.Purchase, error) {
+func (r repositoryPurchase) FindAll() ([]model.Purchase, error) {
 	query := `SELECT 
 				id, 
 				description, 

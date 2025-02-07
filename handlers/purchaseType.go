@@ -24,7 +24,7 @@ func CreatePurchaseType(rep *repository.Repository , w http.ResponseWriter, r *h
 		return
 	}
 
-	id, err := rep.PurchaseType.CreatePurchaseType(purchaseType)
+	id, err := rep.PurchaseType.Create(purchaseType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,7 +53,7 @@ func UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 		return
 	}
 
-	if err := rep.PurchaseType.UpdatePurchaseType(id, purchaseType); err != nil {
+	if err := rep.PurchaseType.Update(id, purchaseType); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -68,7 +68,7 @@ func DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 		return		
 	}
 
-	err = rep.PurchaseType.DeletePurchaseType(id)
+	err = rep.PurchaseType.Delete(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -84,7 +84,7 @@ func FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *
 		return		
 	}
 	
-	purchaseType, err := rep.PurchaseType.FindPurchaseTypeByID(id)
+	purchaseType, err := rep.PurchaseType.FindByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -94,7 +94,7 @@ func FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *
 }
 
 func FindAllPurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	purchaseTypes, err := rep.PurchaseType.FindAllPurchaseType()
+	purchaseTypes, err := rep.PurchaseType.FindAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -15,7 +15,7 @@ func NewRepositoryPerson(db *sql.DB) *repositoryPerson {
 	return &repositoryPerson{db}
 }
 
-func (r repositoryPerson) CreatePerson(p model.Person) (int, error) {
+func (r repositoryPerson) Create(p model.Person) (int, error) {
 	query := `INSERT INTO financial.person (name) VALUES ($1) RETURNING id`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r repositoryPerson) CreatePerson(p model.Person) (int, error) {
 	return id, nil
 }
 
-func (r repositoryPerson) UpdatePerson(id int, p model.Person) error {
+func (r repositoryPerson) Update(id int, p model.Person) error {
 	query := `UPDATE financial.person SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -48,7 +48,7 @@ func (r repositoryPerson) UpdatePerson(id int, p model.Person) error {
 	return nil
 }
 
-func (r repositoryPerson) DeletePerson(id int) error {
+func (r repositoryPerson) Delete(id int) error {
 	query := `DELETE FROM financial.person WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -68,7 +68,7 @@ func (r repositoryPerson) DeletePerson(id int) error {
 	return nil
 }
 
-func (r repositoryPerson) FindPersonByName(name string) (model.Person, error) {
+func (r repositoryPerson) FindByName(name string) (model.Person, error) {
 	query := "SELECT id, name FROM financial.person WHERE name = $1"
 	
 	stmt, err := r.db.Prepare(query)
@@ -88,7 +88,7 @@ func (r repositoryPerson) FindPersonByName(name string) (model.Person, error) {
 	return p, nil
 }
 
-func (r repositoryPerson) FindAllPersons() ([]model.Person, error) {
+func (r repositoryPerson) FindAll() ([]model.Person, error) {
 	query := "SELECT id, name FROM financial.person"
 
 	rows, err := r.db.Query(query)

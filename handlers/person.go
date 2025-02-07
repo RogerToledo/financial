@@ -24,7 +24,7 @@ func CreatePerson(rep *repository.Repository , w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	id, err := rep.Person.CreatePerson(person)
+	id, err := rep.Person.Create(person)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,7 +53,7 @@ func UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if err := rep.Person.UpdatePerson(id, person); err != nil {
+	if err := rep.Person.Update(id, person); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -68,7 +68,7 @@ func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Req
 		return		
 	}
 
-	err = rep.Person.DeletePerson(id)
+	err = rep.Person.Delete(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -80,7 +80,7 @@ func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Req
 func FindPersonByName(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
 	
-	person, err := rep.Person.FindPersonByName(name)
+	person, err := rep.Person.FindByName(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -90,7 +90,7 @@ func FindPersonByName(rep *repository.Repository, w http.ResponseWriter, r *http
 }
 
 func FindAllPersons(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	persons, err := rep.Person.FindAllPersons()
+	persons, err := rep.Person.FindAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

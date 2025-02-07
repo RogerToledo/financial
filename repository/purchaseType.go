@@ -15,7 +15,7 @@ func NewRepositoryPurchaseType(db *sql.DB) *repositoryPurchaseType {
 	return &repositoryPurchaseType{db}
 }
 
-func (r repositoryPurchaseType) CreatePurchaseType(p model.PurchaseType) (int, error) {
+func (r repositoryPurchaseType) Create(p model.PurchaseType) (int, error) {
 	query := `INSERT INTO financial.purchase_type (name) VALUES ($1) RETURNING id`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r repositoryPurchaseType) CreatePurchaseType(p model.PurchaseType) (int, e
 	return id, nil
 }
 
-func (r repositoryPurchaseType) UpdatePurchaseType(id int, pt model.PurchaseType) error {
+func (r repositoryPurchaseType) Update(id int, pt model.PurchaseType) error {
 	query := `UPDATE financial.purchase_type SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -48,7 +48,7 @@ func (r repositoryPurchaseType) UpdatePurchaseType(id int, pt model.PurchaseType
 	return nil
 }
 
-func (r repositoryPurchaseType) DeletePurchaseType(id int) error {
+func (r repositoryPurchaseType) Delete(id int) error {
 	query := `DELETE FROM financial.purchase_type WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -68,7 +68,7 @@ func (r repositoryPurchaseType) DeletePurchaseType(id int) error {
 	return nil
 }
 
-func (r repositoryPurchaseType) FindPurchaseTypeByID(id int) (model.PurchaseType, error) {
+func (r repositoryPurchaseType) FindByID(id int) (model.PurchaseType, error) {
 	query := "SELECT id, name FROM financial.purchase_type WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
@@ -88,7 +88,7 @@ func (r repositoryPurchaseType) FindPurchaseTypeByID(id int) (model.PurchaseType
 	return pt, nil
 }
 
-func (r repositoryPurchaseType) FindAllPurchaseType() ([]model.PurchaseType, error) {
+func (r repositoryPurchaseType) FindAll() ([]model.PurchaseType, error) {
 	query := "SELECT id, name FROM financial.purchase_type"
 
 	rows, err := r.db.Query(query)

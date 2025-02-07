@@ -24,7 +24,7 @@ func CreatePaymentType(rep *repository.Repository , w http.ResponseWriter, r *ht
 		return
 	}
 
-	id, err := rep.PaymentType.CreatePaymentType(payment)
+	id, err := rep.PaymentType.Create(payment)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,7 +53,7 @@ func UpdatePaymentType(rep *repository.Repository, w http.ResponseWriter, r *htt
 		return
 	}
 
-	if err := rep.PaymentType.UpdatePaymentType(id, payment); err != nil {
+	if err := rep.PaymentType.Update(id, payment); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -68,7 +68,7 @@ func DeletePaymentType(rep *repository.Repository, w http.ResponseWriter, r *htt
 		return		
 	}
 
-	err = rep.PaymentType.DeletePaymentType(id)
+	err = rep.PaymentType.Delete(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -84,7 +84,7 @@ func FindPaymentTypeByID(rep *repository.Repository, w http.ResponseWriter, r *h
 		return		
 	}
 	
-	payment, err := rep.PaymentType.FindPaymentTypeByID(id)
+	payment, err := rep.PaymentType.FindByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -94,7 +94,7 @@ func FindPaymentTypeByID(rep *repository.Repository, w http.ResponseWriter, r *h
 }
 
 func FindAllPaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	payments, err := rep.PaymentType.FindAllPaymentType()
+	payments, err := rep.PaymentType.FindAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
