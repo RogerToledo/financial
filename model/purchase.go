@@ -36,7 +36,7 @@ type PurchaseResponse struct {
 	Person	          string  `json:"person"`
 }
 
-type PurchaseResponseDate struct {
+type PurchaseResponseTotal struct {
 	Responses []PurchaseResponse `json:"responses"`
 	Total     float64            `json:"total"`
 }

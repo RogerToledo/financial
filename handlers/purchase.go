@@ -118,6 +118,22 @@ func FindPurchaseByMonth(rep *repository.Repository, w http.ResponseWriter, r *h
 	HTTPResponse(w, purchases, http.StatusOK)
 }
 
+func FindPurchaseByPerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		return
+	}
+	
+	purchases, err := rep.Purchase.FindByPerson(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	HTTPResponse(w, purchases, http.StatusOK)
+}
+
 func FindAllPurchase(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	purchases, err := rep.Purchase.FindAll()
 	if err != nil {

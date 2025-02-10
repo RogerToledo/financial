@@ -190,11 +190,11 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (model.PurchaseResponse, erro
 	return pt, nil
 }
 
-func (r repositoryPurchase) FindByDate(date string) (model.PurchaseResponseDate, error) {
+func (r repositoryPurchase) FindByDate(date string) (model.PurchaseResponseTotal, error) {
 	var (
 		total float64
 		purchases []model.PurchaseResponse
-		responses model.PurchaseResponseDate
+		responses model.PurchaseResponseTotal
 	)	
 
 	query := `SELECT 
@@ -220,9 +220,14 @@ func (r repositoryPurchase) FindByDate(date string) (model.PurchaseResponseDate,
 				on p.id_person = per.id 
 			WHERE "date" = $1;`
 
-	rows, err := r.db.Query(query, date)
+	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return model.PurchaseResponseDate{}, fmt.Errorf("error trying find purchase by date: %v", err)
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying prepare statment: %v", err)
+	}		
+
+	rows, err := stmt.Query(date)
+	if err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying find purchase by date: %v", err)
 	}
 
 	for rows.Next() {
@@ -240,11 +245,11 @@ func (r repositoryPurchase) FindByDate(date string) (model.PurchaseResponseDate,
 			&p.CreditCard,
 			&p.Person,
 		    ); err != nil && err != sql.ErrNoRows {
-			return model.PurchaseResponseDate{}, fmt.Errorf("error trying scan purchase: %v", err)
+			return model.PurchaseResponseTotal{}, fmt.Errorf("error trying scan purchase: %v", err)
 		}
 
 		if err != nil && err == sql.ErrNoRows {
-			return model.PurchaseResponseDate{}, fmt.Errorf("does not exist purchase  with this date")
+			return model.PurchaseResponseTotal{}, fmt.Errorf("does not exist purchase  with this date")
 		}
 
 		purchases = append(purchases, p)
@@ -254,23 +259,27 @@ func (r repositoryPurchase) FindByDate(date string) (model.PurchaseResponseDate,
 		total += pur.Amount
 	}
 
-	responses = model.PurchaseResponseDate{
+	responses = model.PurchaseResponseTotal{
 		Responses: purchases,
 		Total: total,
 	}
 
 	if err := rows.Close(); err != nil {
-		return model.PurchaseResponseDate{}, fmt.Errorf("error trying close rows: %v", err)
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying close rows: %v", err)
+	}
+
+	if err := stmt.Close(); err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying close statment: %v", err)
 	}
 
 	return responses, nil
 }
 
-func (r repositoryPurchase) FindByMonth(date string) (model.PurchaseResponseDate, error){
+func (r repositoryPurchase) FindByMonth(date string) (model.PurchaseResponseTotal, error){
 	var (
 		total float64
 		purchases []model.PurchaseResponse
-		responses model.PurchaseResponseDate
+		responses model.PurchaseResponseTotal
 	)	
 
 	query := `SELECT 
@@ -297,9 +306,14 @@ func (r repositoryPurchase) FindByMonth(date string) (model.PurchaseResponseDate
 			WHERE to_char(p."date", 'YYYY-MM') = $1
 			ORDER BY p."date";`
 
-	rows, err := r.db.Query(query, date)
+	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return model.PurchaseResponseDate{}, fmt.Errorf("error trying find purchase by date: %v", err)
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying prepare statment: %v", err)
+	}		
+
+	rows, err := stmt.Query(date)
+	if err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying find purchase by date: %v", err)
 	}
 
 	for rows.Next() {
@@ -317,11 +331,11 @@ func (r repositoryPurchase) FindByMonth(date string) (model.PurchaseResponseDate
 			&p.CreditCard,
 			&p.Person,
 		    ); err != nil && err != sql.ErrNoRows {
-			return model.PurchaseResponseDate{}, fmt.Errorf("error trying scan purchase: %v", err)
+			return model.PurchaseResponseTotal{}, fmt.Errorf("error trying scan purchase: %v", err)
 		}
 
 		if err != nil && err == sql.ErrNoRows {
-			return model.PurchaseResponseDate{}, fmt.Errorf("does not exist purchase  with this date")
+			return model.PurchaseResponseTotal{}, fmt.Errorf("does not exist purchase  with this date")
 		}
 
 		purchases = append(purchases, p)
@@ -331,13 +345,104 @@ func (r repositoryPurchase) FindByMonth(date string) (model.PurchaseResponseDate
 		total += pur.Amount
 	}
 
-	responses = model.PurchaseResponseDate{
+	responses = model.PurchaseResponseTotal{
 		Responses: purchases,
 		Total: total,
 	}
 
 	if err := rows.Close(); err != nil {
-		return model.PurchaseResponseDate{}, fmt.Errorf("error trying close rows: %v", err)
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying close rows: %v", err)
+	}
+
+	if err := stmt.Close(); err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying close statment: %v", err)
+	}
+
+	return responses, nil
+}
+
+func (r repositoryPurchase) FindByPerson(id uuid.UUID) (model.PurchaseResponseTotal, error) {
+	var (
+		total float64
+		responses model.PurchaseResponseTotal
+	)
+	
+	query := `SELECT 
+				p.id, 
+				p.description, 
+				p.amount, 
+				p."date", 
+				p.installment_number, 
+				p.installment, 
+				p.place, 
+				pt."name",
+				purt."name", 
+				cc."owner", 
+				per."name"
+			FROM financial.purchase p
+			inner join financial.payment_type pt 
+				on p.id_payment_type = pt.id 
+			inner join financial.purchase_type purt	
+				on p.id_purchase_type = purt.id 
+			inner join financial.credit_card cc	
+				on p.id_credit_card = cc.id
+			inner join financial.person per	
+				on p.id_person = per.id 
+			WHERE p.id_person = $1
+			ORDER BY p."date";`
+
+	stmt, err := r.db.Prepare(query)
+	if err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying prepare statment: %v", err)
+	}		
+
+	rows, err := stmt.Query(id)
+	if err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying find purchase by person: %v", err)
+	}
+
+	var purchases []model.PurchaseResponse
+
+	for rows.Next() {
+		var p model.PurchaseResponse
+		if err = rows.Scan(
+			&p.ID,
+			&p.Description,
+			&p.Amount,
+			&p.Date,
+			&p.InstallmentNumber,
+			&p.Installment,
+			&p.Place,
+			&p.PaymentType,
+			&p.PurchaseType,
+			&p.CreditCard,
+			&p.Person,
+		    ); err != nil && err != sql.ErrNoRows {
+			return model.PurchaseResponseTotal{}, fmt.Errorf("error trying scan purchase: %v", err)
+		}
+
+		if err != nil && err == sql.ErrNoRows {
+			return model.PurchaseResponseTotal{}, fmt.Errorf("does not exist purchase with this person")
+		}
+
+		purchases = append(purchases, p)
+	}
+
+	for _, pur := range purchases {
+		total += pur.Amount
+	}
+
+	responses = model.PurchaseResponseTotal{
+		Responses: purchases,
+		Total: total,
+	}
+
+	if err := rows.Close(); err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying close rows: %v", err)
+	}
+
+	if err := stmt.Close(); err != nil {
+		return model.PurchaseResponseTotal{}, fmt.Errorf("error trying close statment: %v", err)
 	}
 
 	return responses, nil
