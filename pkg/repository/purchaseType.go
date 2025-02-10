@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/model"
+	"github.com/me/financial/pkg/model"
 )
 
 type repositoryPurchaseType struct {

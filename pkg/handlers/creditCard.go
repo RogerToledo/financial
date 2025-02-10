@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/model"
-	"github.com/me/financial/repository"
+	"github.com/me/financial/pkg/model"
+	"github.com/me/financial/pkg/repository"
 )
 
 func CreateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {

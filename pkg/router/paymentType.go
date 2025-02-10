@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/me/financial/repository"
+	"github.com/me/financial/pkg/repository"
 
-	"github.com/me/financial/handlers"
+	"github.com/me/financial/pkg/handlers"
 )
 
 func PaymentTypeRoutes(mux *http.ServeMux, rep *repository.Repository) {

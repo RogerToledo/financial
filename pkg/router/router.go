@@ -6,8 +6,9 @@ import (
 	"net/http"
 
 	"github.com/me/financial/config"
-	"github.com/me/financial/db"
-	"github.com/me/financial/repository"
+	"github.com/me/financial/pkg/db"
+	"github.com/me/financial/pkg/repository"
+	"github.com/sagikazarmark/slog-shim"
 )
 
 func InitializeRoutes() {
@@ -31,6 +32,6 @@ func InitializeRoutes() {
 	PurchaseTypeRoutes(mux, rep)
 	PurchaseRoutes(mux, rep)
 
-	log.Printf("Server running on port %s", config.ServerPort())
+	slog.Info("Server running on port %s", config.ServerPort())
 	http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort()), mux)
 }

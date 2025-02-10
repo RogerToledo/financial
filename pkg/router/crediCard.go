@@ -3,8 +3,8 @@ package router
 import (
 	"net/http"
 
-	"github.com/me/financial/handlers"
-	"github.com/me/financial/repository"
+	"github.com/me/financial/pkg/handlers"
+	"github.com/me/financial/pkg/repository"
 )
 
 func CreditCardRoutes(mux *http.ServeMux, rep *repository.Repository) {
