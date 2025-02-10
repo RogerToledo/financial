@@ -1,6 +1,8 @@
 package model
 
+import "github.com/google/uuid"
+
 type CreditCard struct {
-	ID    int    `json:"id"`
-	Owner string `json:"owner"`
+	ID    uuid.UUID `json:"id"`
+	Owner string    `json:"owner"`
 }

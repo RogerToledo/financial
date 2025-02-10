@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 )
 
@@ -15,26 +16,30 @@ func NewRepositoryPaymentType(db *sql.DB) *repositoryPaymentType {
 	return &repositoryPaymentType{db}
 }
 
-func (r repositoryPaymentType) Create(p model.PaymentType) (int, error) {
-	query := `INSERT INTO financial.payment_type (name) VALUES ($1) RETURNING id`
+func (r repositoryPaymentType) Create(p model.PaymentType) error {
+	query := `INSERT INTO financial.payment_type (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var id int
-	if err = stmt.QueryRow(p.Name).Scan(&id); err != nil {
-		return 0, fmt.Errorf("error trying insert payment type: %v", err)
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf("error trying create uuid: %v", err)
+	}
+
+	if _, err = stmt.Exec(id, p.Name); err != nil {
+		return fmt.Errorf("error trying insert payment type: %v", err)
 	}
 
 	if err := stmt.Close(); err != nil {
-		return 0, fmt.Errorf("error trying close stmt: %v", err)
+		return fmt.Errorf("error trying close stmt: %v", err)
 	}
 
-	return id, nil
+	return nil
 }
 
-func (r repositoryPaymentType) Update(id int, pt model.PaymentType) error {
+func (r repositoryPaymentType) Update(id uuid.UUID, pt model.PaymentType) error {
 	query := `UPDATE financial.payment_type SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -56,7 +61,7 @@ func (r repositoryPaymentType) Update(id int, pt model.PaymentType) error {
 	return nil
 }
 
-func (r repositoryPaymentType) Delete(id int) error {
+func (r repositoryPaymentType) Delete(id uuid.UUID) error {
 	query := `DELETE FROM financial.payment_type WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -80,7 +85,7 @@ func (r repositoryPaymentType) Delete(id int) error {
 	return nil
 }
 
-func (r repositoryPaymentType) FindByID(id int) (model.PaymentType, error) {
+func (r repositoryPaymentType) FindByID(id uuid.UUID) (model.PaymentType, error) {
 	query := "SELECT id, name FROM financial.payment_type WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)

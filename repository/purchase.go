@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 )
 
@@ -15,8 +16,9 @@ func NewRepositoryPurchase(db *sql.DB) *repositoryPurchase {
 	return &repositoryPurchase{db}
 }
 
-func (r repositoryPurchase) Create(p model.Purchase) (int, error) {
+func (r repositoryPurchase) Create(p model.Purchase) error {
 	query := `INSERT INTO financial.purchase(
+		id,
 		description, 
 		amount, 
 		"date", 
@@ -27,15 +29,20 @@ func (r repositoryPurchase) Create(p model.Purchase) (int, error) {
 		id_purchase_type, 
 		id_credit_card, 
 		id_person
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id;`
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var id int
-	if err = stmt.QueryRow(
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf("error trying create uuid: %v", err)
+	} 
+	
+	if _, err = stmt.Exec(
+		id,
 		p.Description,
 		p.Amount,
 		p.Date,
@@ -46,18 +53,18 @@ func (r repositoryPurchase) Create(p model.Purchase) (int, error) {
 		p.IDPurchaseType,
 		p.IDCreditCard,
 		p.IDPerson,
-	).Scan(&id); err != nil {
-		return 0, fmt.Errorf("error trying insert purchase type: %v", err)
+	); err != nil {
+		return fmt.Errorf("error trying insert purchase type: %v", err)
 	}
 
 	if err := stmt.Close(); err != nil {
-		return 0, fmt.Errorf("error trying close statment: %v", err)
+		return fmt.Errorf("error trying close statment: %v", err)
 	}
 
-	return id, nil
+	return nil
 }
 
-func (r repositoryPurchase) Update(id int, p model.Purchase) error {
+func (r repositoryPurchase) Update(id uuid.UUID, p model.Purchase) error {
 	query := `UPDATE financial.purchase
 		SET description = $1, 
 			amount = $2, 
@@ -102,7 +109,7 @@ func (r repositoryPurchase) Update(id int, p model.Purchase) error {
 	return nil
 }
 
-func (r repositoryPurchase) Delete(id int) error {
+func (r repositoryPurchase) Delete(id uuid.UUID) error {
 	query := `DELETE FROM financial.purchase WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -126,7 +133,7 @@ func (r repositoryPurchase) Delete(id int) error {
 	return nil
 }
 
-func (r repositoryPurchase) FindByID(id int) (model.PurchaseResponse, error) {
+func (r repositoryPurchase) FindByID(id uuid.UUID) (model.PurchaseResponse, error) {
 	query := `SELECT 
 				p.id, 
 				p.description, 

@@ -22,8 +22,8 @@ func PersonRoutes(mux *http.ServeMux, rep *repository.Repository) {
 		handlers.DeletePerson(rep, w, r)
 	})
 
-	mux.HandleFunc("GET /person/{name}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindPersonByName(rep, w, r)
+	mux.HandleFunc("GET /person/{id}", func(w http.ResponseWriter, r *http.Request) {
+		handlers.FindPersonByID(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /persons", func(w http.ResponseWriter, r *http.Request) {

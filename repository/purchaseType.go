@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 )
 
@@ -15,26 +16,29 @@ func NewRepositoryPurchaseType(db *sql.DB) *repositoryPurchaseType {
 	return &repositoryPurchaseType{db}
 }
 
-func (r repositoryPurchaseType) Create(p model.PurchaseType) (int, error) {
-	query := `INSERT INTO financial.purchase_type (name) VALUES ($1) RETURNING id`
+func (r repositoryPurchaseType) Create(p model.PurchaseType) error {
+	query := `INSERT INTO financial.purchase_type (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var id int
-	if err = stmt.QueryRow(p.Name).Scan(&id); err != nil {
-		return 0, fmt.Errorf("error trying insert purchase type type: %v", err)
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf("error trying create uuid: %v", err)
+	}
+	if _, err = stmt.Exec(id, p.Name); err != nil {
+		return fmt.Errorf("error trying insert purchase type type: %v", err)
 	}
 
 	if err := stmt.Close(); err != nil {
-		return 0, fmt.Errorf("error trying close statment: %v", err)
+		return fmt.Errorf("error trying close statment: %v", err)
 	}
 
-	return id, nil
+	return nil
 }
 
-func (r repositoryPurchaseType) Update(id int, pt model.PurchaseType) error {
+func (r repositoryPurchaseType) Update(id uuid.UUID, pt model.PurchaseType) error {
 	query := `UPDATE financial.purchase_type SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -56,7 +60,7 @@ func (r repositoryPurchaseType) Update(id int, pt model.PurchaseType) error {
 	return nil
 }
 
-func (r repositoryPurchaseType) Delete(id int) error {
+func (r repositoryPurchaseType) Delete(id uuid.UUID) error {
 	query := `DELETE FROM financial.purchase_type WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -80,7 +84,7 @@ func (r repositoryPurchaseType) Delete(id int) error {
 	return nil
 }
 
-func (r repositoryPurchaseType) FindByID(id int) (model.PurchaseType, error) {
+func (r repositoryPurchaseType) FindByID(id uuid.UUID) (model.PurchaseType, error) {
 	query := "SELECT id, name FROM financial.purchase_type WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
@@ -124,11 +128,11 @@ func (r repositoryPurchaseType) FindAll() ([]model.PurchaseType, error) {
 			return []model.PurchaseType{}, fmt.Errorf("does not exist purchase type with this name")
 		}
 
-		if err := rows.Close(); err != nil {
-			return []model.PurchaseType{}, fmt.Errorf("error trying close rows: %v", err)
-		}
-
 		purchases = append(purchases, pt)
+	}
+
+	if err := rows.Close(); err != nil {
+		return []model.PurchaseType{}, fmt.Errorf("error trying close rows: %v", err)
 	}
 
 	return purchases, nil

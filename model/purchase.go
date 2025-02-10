@@ -3,10 +3,12 @@ package model
 import (
 	"fmt"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type Purchase struct {
-	ID                int     `json:"id"`	
+	ID                uuid.UUID `json:"id"`	
 	Description       string  `json:"description"`
 	Type 	          string  `json:"type"`
 	Amount            float64 `json:"amount"`
@@ -14,14 +16,14 @@ type Purchase struct {
 	InstallmentNumber int     `json:"installment_number"`
 	Installment       float64 `json:"installment"`
 	Place	          string  `json:"place"`
-	IDPaymentType     int     `json:"id_payment_type"`
-	IDCreditCard	  int     `json:"id_credit_card"`
-	IDPurchaseType    int     `json:"id_purchase_type"`
-	IDPerson	      int     `json:"id_person"`
+	IDPaymentType     uuid.UUID `json:"id_payment_type"`
+	IDCreditCard	  uuid.UUID `json:"id_credit_card"`
+	IDPurchaseType    uuid.UUID `json:"id_purchase_type"`
+	IDPerson	      uuid.UUID `json:"id_person"`
 }
 
 type PurchaseResponse struct {
-	ID                int     `json:"id"`	
+	ID                uuid.UUID `json:"id"`
 	Description       string  `json:"description"`
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
@@ -50,19 +52,19 @@ func (p *Purchase) Validate() (bool, string) {
 		invalidFields = append(invalidFields, "Data")
 	}
 
-	if p.IDPaymentType <= 0 {
+	if p.IDPaymentType == uuid.Nil {
 		invalidFields = append(invalidFields, "ID of Payment Type")
 	}
 
-	if p.IDCreditCard <= 0 {
+	if p.IDCreditCard == uuid.Nil {
 		invalidFields = append(invalidFields, "ID of Credit Card")
 	}
 
-	if p.IDPurchaseType <= 0 {
+	if p.IDPurchaseType == uuid.Nil {
 		invalidFields = append(invalidFields, "ID of Purchase Type")
 	}
 
-	if p.IDPerson <= 0 {
+	if p.IDPerson == uuid.Nil {
 		invalidFields = append(invalidFields, "ID of Person")
 	}
 

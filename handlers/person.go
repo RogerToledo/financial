@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 	"github.com/me/financial/repository"
 )
@@ -24,21 +24,20 @@ func CreatePerson(rep *repository.Repository , w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	id, err := rep.Person.Create(person)
-	if err != nil {
+	if err := rep.Person.Create(person); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Person created with ID: %d", id), http.StatusCreated)
+	HTTPResponse(w, fmt.Sprint("Person was created with success!"), http.StatusCreated)
 }
 
 func UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var person model.Person
 
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -58,14 +57,14 @@ func UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Person updated with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprintf("Person was updated with success!"), http.StatusOK)
 }
 
 func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
-		return		
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusBadRequest)
+		return
 	}
 
 	err = rep.Person.Delete(id)
@@ -74,13 +73,17 @@ func DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Person deleted with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprint("Person was deleted with success!"), http.StatusOK)
 }
 
-func FindPersonByName(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	name := r.PathValue("name")
+func FindPersonByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusBadRequest)
+		return
+	}
 	
-	person, err := rep.Person.FindByName(name)
+	person, err := rep.Person.FindByName(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 	"github.com/me/financial/repository"
 )
@@ -24,21 +24,20 @@ func CreatePurchaseType(rep *repository.Repository , w http.ResponseWriter, r *h
 		return
 	}
 
-	id, err := rep.PurchaseType.Create(purchaseType)
-	if err != nil {
+	if err := rep.PurchaseType.Create(purchaseType); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Purchase Type created with ID: %d", id), http.StatusCreated)
+	HTTPResponse(w, fmt.Sprintf("Purchase Type was created with success!"), http.StatusCreated)
 }
 
 func UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var purchaseType model.PurchaseType
 
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -58,14 +57,14 @@ func UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Purchase Type updated with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprint("Purchase Type was updated with success"), http.StatusOK)
 }
 
 func DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
-		return		
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	err = rep.PurchaseType.Delete(id)
@@ -74,14 +73,14 @@ func DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *ht
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Purchase Type deleted with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprint("Purchase Type was deleted with success!"), http.StatusOK)
 }
 
 func FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
-		return		
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		return
 	}
 	
 	purchaseType, err := rep.PurchaseType.FindByID(id)

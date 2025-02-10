@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 	"github.com/me/financial/repository"
 )
@@ -23,26 +23,24 @@ func CreateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 		return
 	}
 
-	id, err := rep.CreditCard.Create(creditCard)
-	if err != nil {
+	if err := rep.CreditCard.Create(creditCard); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} 
 
-	HTTPResponse(w, fmt.Sprintf("Credit card created with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprintf("Credit card created to %s", creditCard.Owner), http.StatusOK)
 }
 
 func UpdateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var creditCard model.CreditCard
 
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
 		return
 	}
-
-	err = json.NewDecoder(r.Body).Decode(&creditCard)
-	if err != nil {
+	
+	if err := json.NewDecoder(r.Body).Decode(&creditCard); err != nil {
 		http.Error(w, fmt.Sprintf("Error decoding credit card: %v", err), http.StatusBadRequest)
 		return
 	}
@@ -57,13 +55,13 @@ func UpdateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Credit card updated with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprint("Credit card was updated with success!"), http.StatusOK)
 }
 
 func DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -73,7 +71,7 @@ func DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Credit card deleted with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprint("Credit card deleted with sucess!"), http.StatusOK)
 }
 
 func FindCreditCardByOwner(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {

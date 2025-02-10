@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 )
 
@@ -15,26 +16,30 @@ func NewRepositoryCreditCard(db *sql.DB) *repositoryCreditCard {
 	return &repositoryCreditCard{db}
 }
 
-func (r repositoryCreditCard) Create(cc model.CreditCard) (int, error) {
-	query := `INSERT INTO financial.credit_card (owner) VALUES ($1) RETURNING id`
+func (r repositoryCreditCard) Create(cc model.CreditCard) error {
+	query := `INSERT INTO financial.credit_card (id, owner) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var id int
-	if err = stmt.QueryRow(cc.Owner).Scan(&id); err != nil {
-		return 0, fmt.Errorf("error trying insert credit card: %v", err)
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf("error trying create uuid: %v", err)
+	}
+
+	if _, err = stmt.Exec(id, cc.Owner); err != nil {
+		return fmt.Errorf("error trying insert credit card: %v", err)
 	}
 
 	if err := stmt.Close(); err != nil {
-		return 0, fmt.Errorf("error trying close statment: %v", err)
+		return fmt.Errorf("error trying close statment: %v", err)
 	}
 
-	return id, nil
+	return nil
 }
 
-func (r repositoryCreditCard) Update(id int, cc model.CreditCard) error {
+func (r repositoryCreditCard) Update(id uuid.UUID, cc model.CreditCard) error {
 	query := `UPDATE financial.credit_card SET owner = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -56,7 +61,7 @@ func (r repositoryCreditCard) Update(id int, cc model.CreditCard) error {
 	return nil
 }
 
-func (r repositoryCreditCard) Delete(id int) error {
+func (r repositoryCreditCard) Delete(id uuid.UUID) error {
 	query := `DELETE FROM financial.credit_card WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)

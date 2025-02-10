@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 )
 
@@ -15,26 +16,30 @@ func NewRepositoryPerson(db *sql.DB) *repositoryPerson {
 	return &repositoryPerson{db}
 }
 
-func (r repositoryPerson) Create(p model.Person) (int, error) {
-	query := `INSERT INTO financial.person (name) VALUES ($1) RETURNING id`
+func (r repositoryPerson) Create(p model.Person) error {
+	query := `INSERT INTO financial.person (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return 0, fmt.Errorf("error trying prepare statment: %v", err)
+		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var id int
-	if err = stmt.QueryRow(p.Name).Scan(&id); err != nil {
-		return 0, fmt.Errorf("error trying insert person: %v", err)
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return fmt.Errorf("error trying create uuid: %v", err)
+	}
+
+	if _, err = stmt.Exec(id, p.Name); err != nil {
+		return fmt.Errorf("error trying insert person: %v", err)
 	}
 
 	if err := stmt.Close(); err != nil {
-		return 0, fmt.Errorf("error trying close stmt: %v", err)
+		return fmt.Errorf("error trying close stmt: %v", err)
 	}
 
-	return id, nil
+	return nil
 }
 
-func (r repositoryPerson) Update(id int, p model.Person) error {
+func (r repositoryPerson) Update(id uuid.UUID, p model.Person) error {
 	query := `UPDATE financial.person SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -56,7 +61,7 @@ func (r repositoryPerson) Update(id int, p model.Person) error {
 	return nil
 }
 
-func (r repositoryPerson) Delete(id int) error {
+func (r repositoryPerson) Delete(id uuid.UUID) error {
 	query := `DELETE FROM financial.person WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -80,8 +85,8 @@ func (r repositoryPerson) Delete(id int) error {
 	return nil
 }
 
-func (r repositoryPerson) FindByName(name string) (model.Person, error) {
-	query := "SELECT id, name FROM financial.person WHERE name = $1"
+func (r repositoryPerson) FindByName(id uuid.UUID) (model.Person, error) {
+	query := "SELECT id, name FROM financial.person WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -89,12 +94,12 @@ func (r repositoryPerson) FindByName(name string) (model.Person, error) {
 	}
 
 	var p model.Person
-	if err = stmt.QueryRow(name).Scan(&p.ID, &p.Name); err != nil && err != sql.ErrNoRows {
+	if err = stmt.QueryRow(id).Scan(&p.ID, &p.Name); err != nil && err != sql.ErrNoRows {
 		return model.Person{}, fmt.Errorf("error trying find person: %v", err)
 	}
 
 	if err != nil && err == sql.ErrNoRows {
-		return model.Person{}, fmt.Errorf("does not exist person with this name")
+		return model.Person{}, fmt.Errorf("does not exist person with this id")
 	}
 
 	if err := stmt.Close(); err != nil {
@@ -124,11 +129,11 @@ func (r repositoryPerson) FindAll() ([]model.Person, error) {
 			return []model.Person{}, fmt.Errorf("does not exist person with this name")
 		}
 
-		if err := rows.Close(); err != nil {
-			return []model.Person{}, fmt.Errorf("error trying close rows: %v", err)
-		}
-
 		persons = append(persons, p)
+	}
+
+	if err := rows.Close(); err != nil {
+		return []model.Person{}, fmt.Errorf("error trying close rows: %v", err)
 	}
 
 	return persons, nil

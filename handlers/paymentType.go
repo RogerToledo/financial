@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/me/financial/model"
 	"github.com/me/financial/repository"
 )
@@ -24,21 +24,20 @@ func CreatePaymentType(rep *repository.Repository , w http.ResponseWriter, r *ht
 		return
 	}
 
-	id, err := rep.PaymentType.Create(payment)
-	if err != nil {
+	if err := rep.PaymentType.Create(payment); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Payment Type created with ID: %d", id), http.StatusCreated)
+	HTTPResponse(w, fmt.Sprintf("Payment Type was created with success!"), http.StatusCreated)
 }
 
 func UpdatePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	var payment model.PaymentType
 
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -58,14 +57,14 @@ func UpdatePaymentType(rep *repository.Repository, w http.ResponseWriter, r *htt
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Payment Type updated with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprint("Payment Type was updated with success!"), http.StatusOK)
 }
 
 func DeletePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
-		return		
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	err = rep.PaymentType.Delete(id)
@@ -74,14 +73,14 @@ func DeletePaymentType(rep *repository.Repository, w http.ResponseWriter, r *htt
 		return
 	}
 
-	HTTPResponse(w, fmt.Sprintf("Payment Type deleted with ID: %d", id), http.StatusOK)
+	HTTPResponse(w, fmt.Sprintf("Payment Type was deleted with success!"), http.StatusOK)
 }
 
 func FindPaymentTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to integer: %v", err), http.StatusInternalServerError)
-		return		
+		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		return
 	}
 	
 	payment, err := rep.PaymentType.FindByID(id)
