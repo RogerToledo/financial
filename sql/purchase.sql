@@ -16,6 +16,8 @@ CREATE TABLE financial.purchase (
 	id_purchase_type uuid NOT NULL,
 	id_credit_card uuid NOT NULL,
 	id_person uuid NOT NULL,
+	create_at date DEFAULT now() NOT NULL,
+	update_at date NULL,
 	CONSTRAINT purchase_pk PRIMARY KEY (id)
 );
 
