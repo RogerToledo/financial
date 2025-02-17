@@ -20,7 +20,7 @@ var cfg *config
 func Load() error {
 	viper.SetConfigName("cfg")
 	viper.SetConfigType("toml")
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath("../config/")
 	if err := viper.ReadInConfig(); err != nil {
 		return err
 	}
