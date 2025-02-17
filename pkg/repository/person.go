@@ -5,8 +5,16 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/pkg/model"
+	"github.com/me/financial/pkg/entity"
 )
+
+type RepositoryPerson interface {
+	Create(p entity.Person) error
+	Update(p entity.Person) error
+	Delete(id uuid.UUID) error
+	FindByID(id uuid.UUID) (entity.Person, error)
+	FindAll() ([]entity.Person, error)
+}
 
 type repositoryPerson struct {
 	db *sql.DB
@@ -16,7 +24,7 @@ func NewRepositoryPerson(db *sql.DB) *repositoryPerson {
 	return &repositoryPerson{db}
 }
 
-func (r repositoryPerson) Create(p model.Person) error {
+func (r repositoryPerson) Create(p entity.Person) error {
 	query := `INSERT INTO financial.person (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -39,14 +47,14 @@ func (r repositoryPerson) Create(p model.Person) error {
 	return nil
 }
 
-func (r repositoryPerson) Update(id uuid.UUID, p model.Person) error {
+func (r repositoryPerson) Update(p entity.Person) error {
 	query := `UPDATE financial.person SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	if _, err = stmt.Exec(p.Name, id); err != nil && err != sql.ErrNoRows {
+	if _, err = stmt.Exec(p.Name, p.ID); err != nil && err != sql.ErrNoRows {
 		return fmt.Errorf("error trying update person: %v", err)
 	}
 
@@ -85,55 +93,55 @@ func (r repositoryPerson) Delete(id uuid.UUID) error {
 	return nil
 }
 
-func (r repositoryPerson) FindByName(id uuid.UUID) (model.Person, error) {
+func (r repositoryPerson) FindByID(id uuid.UUID) (entity.Person, error) {
 	query := "SELECT id, name FROM financial.person WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return model.Person{}, fmt.Errorf("error trying prepare statment: %v", err)
+		return entity.Person{}, fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var p model.Person
+	var p entity.Person
 	if err = stmt.QueryRow(id).Scan(&p.ID, &p.Name); err != nil && err != sql.ErrNoRows {
-		return model.Person{}, fmt.Errorf("error trying find person: %v", err)
+		return entity.Person{}, fmt.Errorf("error trying find person: %v", err)
 	}
 
 	if err != nil && err == sql.ErrNoRows {
-		return model.Person{}, fmt.Errorf("does not exist person with this id")
+		return entity.Person{}, fmt.Errorf("does not exist person with this id")
 	}
 
 	if err := stmt.Close(); err != nil {
-		return model.Person{}, fmt.Errorf("error trying close stmt: %v", err)
+		return entity.Person{}, fmt.Errorf("error trying close stmt: %v", err)
 	}
 
 	return p, nil
 }
 
-func (r repositoryPerson) FindAll() ([]model.Person, error) {
+func (r repositoryPerson) FindAll() ([]entity.Person, error) {
 	query := "SELECT id, name FROM financial.person ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {
-		return []model.Person{}, fmt.Errorf("error trying find all persons: %v", err)
+		return []entity.Person{}, fmt.Errorf("error trying find all persons: %v", err)
 	}
 
-	var persons []model.Person
+	var persons []entity.Person
 
 	for rows.Next() {
-		var p model.Person
+		var p entity.Person
 		if err = rows.Scan(&p.ID, &p.Name); err != nil && err != sql.ErrNoRows {
-			return []model.Person{}, fmt.Errorf("error trying scan person: %v", err)
+			return []entity.Person{}, fmt.Errorf("error trying scan person: %v", err)
 		}
 
 		if err != nil && err == sql.ErrNoRows {
-			return []model.Person{}, fmt.Errorf("does not exist person with this name")
+			return []entity.Person{}, fmt.Errorf("does not exist person with this name")
 		}
 
 		persons = append(persons, p)
 	}
 
 	if err := rows.Close(); err != nil {
-		return []model.Person{}, fmt.Errorf("error trying close rows: %v", err)
+		return []entity.Person{}, fmt.Errorf("error trying close rows: %v", err)
 	}
 
 	return persons, nil

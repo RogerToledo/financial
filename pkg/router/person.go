@@ -5,28 +5,29 @@ import (
 
 	"github.com/me/financial/pkg/repository"
 
-	"github.com/me/financial/pkg/handlers"
+	"github.com/me/financial/pkg/controller"
 )
 
 func PersonRoutes(mux *http.ServeMux, rep *repository.Repository) {
+	c := controller.NewController(rep)
 	
 	mux.HandleFunc("POST /person", func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreatePerson(rep, w, r)
+		c.Person.CreatePerson(rep, w, r)
 	})
 	
-	mux.HandleFunc("PUT /person/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdatePerson(rep, w, r)
+	mux.HandleFunc("PUT /person", func(w http.ResponseWriter, r *http.Request) {
+		c.Person.UpdatePerson(rep, w, r)
 	})
 
 	mux.HandleFunc("DELETE /person/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.DeletePerson(rep, w, r)
+		c.Person.DeletePerson(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /person/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindPersonByID(rep, w, r)
+		c.Person.FindPersonByID(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /persons", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindAllPersons(rep, w, r)
+		c.Person.FindAllPersons(rep, w, r)
 	})
 }
