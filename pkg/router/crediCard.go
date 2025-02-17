@@ -3,28 +3,30 @@ package router
 import (
 	"net/http"
 
-	"github.com/me/financial/pkg/handlers"
+	"github.com/me/financial/pkg/controller"
 	"github.com/me/financial/pkg/repository"
 )
 
 func CreditCardRoutes(mux *http.ServeMux, rep *repository.Repository) {
+	c := controller.NewController(rep)
+
 	mux.HandleFunc("POST /creditCard", func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateCreditCard(rep, w, r)
+		c.CreditCard.CreateCreditCard(rep, w, r)
 	})
 
-	mux.HandleFunc("PUT /creditCard/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdateCreditCard(rep, w, r)
+	mux.HandleFunc("PUT /creditCard", func(w http.ResponseWriter, r *http.Request) {
+		c.CreditCard.UpdateCreditCard(rep, w, r)
 	})
 
 	mux.HandleFunc("DELETE /creditCard/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.DeleteCreditCard(rep, w, r)
+		c.CreditCard.DeleteCreditCard(rep, w, r)
 	})
 
-	mux.HandleFunc("GET /creditCard/{owner}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindCreditCardByOwner(rep, w, r)
+	mux.HandleFunc("GET /creditCard/{id}", func(w http.ResponseWriter, r *http.Request) {
+		c.CreditCard.FindCreditCardByID(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /creditCards", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindAllCreditCard(rep, w, r)
+		c.CreditCard.FindAllCreditCard(rep, w, r)
 	})
 }
