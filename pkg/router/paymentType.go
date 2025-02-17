@@ -5,28 +5,29 @@ import (
 
 	"github.com/me/financial/pkg/repository"
 
-	"github.com/me/financial/pkg/handlers"
+	"github.com/me/financial/pkg/controller"
 )
 
 func PaymentTypeRoutes(mux *http.ServeMux, rep *repository.Repository) {
+	c := controller.NewController(rep)
 	
 	mux.HandleFunc("POST /paymentType", func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreatePaymentType(rep, w, r)
+		c.PaymentType.CreatePaymentType(rep, w, r)
 	})
 	
-	mux.HandleFunc("PUT /paymentType/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdatePaymentType(rep, w, r)
+	mux.HandleFunc("PUT /paymentType", func(w http.ResponseWriter, r *http.Request) {
+		c.PaymentType.UpdatePaymentType(rep, w, r)
 	})
 
 	mux.HandleFunc("DELETE /paymentType/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.DeletePaymentType(rep, w, r)
+		c.PaymentType.DeletePaymentType(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /paymentType/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindPaymentTypeByID(rep, w, r)
+		c.PaymentType.FindPaymentTypeByID(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /paymentType", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindAllPaymentType(rep, w, r)
+		c.PaymentType.FindAllPaymentType(rep, w, r)
 	})
 }
