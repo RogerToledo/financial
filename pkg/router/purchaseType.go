@@ -5,28 +5,29 @@ import (
 
 	"github.com/me/financial/pkg/repository"
 
-	"github.com/me/financial/pkg/handlers"
+	"github.com/me/financial/pkg/controller"
 )
 
 func PurchaseTypeRoutes(mux *http.ServeMux, rep *repository.Repository) {
+	c := controller.NewController(rep)
 	
 	mux.HandleFunc("POST /purchaseType", func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreatePurchaseType(rep, w, r)
+		c.PurchaseType.CreatePurchaseType(rep, w, r)
 	})
 	
-	mux.HandleFunc("PUT /purchaseType/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdatePurchaseType(rep, w, r)
+	mux.HandleFunc("PUT /purchaseType", func(w http.ResponseWriter, r *http.Request) {
+		c.PurchaseType.UpdatePurchaseType(rep, w, r)
 	})
 
 	mux.HandleFunc("DELETE /purchaseType/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.DeletePurchaseType(rep, w, r)
+		c.PurchaseType.DeletePurchaseType(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchaseType/{id}", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindPurchaseTypeByID(rep, w, r)
+		c.PurchaseType.FindPurchaseTypeByID(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchaseType", func(w http.ResponseWriter, r *http.Request) {
-		handlers.FindAllPurchaseType(rep, w, r)
+		c.PurchaseType.FindAllPurchaseTypes(rep, w, r)
 	})
 }
