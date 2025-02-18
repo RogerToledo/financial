@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/me/financial/pkg/entity"
 	"github.com/me/financial/pkg/repository"
 	"github.com/me/financial/pkg/usecase"
@@ -32,16 +32,19 @@ func (pt *controllerPurchaseType) CreatePurchaseType(rep *repository.Repository 
 
 	err := json.NewDecoder(r.Body).Decode(&purchaseType)
 	if err != nil {
+		slog.Error(fmt.Sprintf("Error decoding Purchase Type: %v", err))
 		http.Error(w, fmt.Sprintf("Error decoding Purchase Type: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if err := purchaseType.Validate(true); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := pt.usecase.CreatePurchaseType(purchaseType); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -54,16 +57,19 @@ func (pt *controllerPurchaseType) UpdatePurchaseType(rep *repository.Repository,
 
 	err := json.NewDecoder(r.Body).Decode(&purchaseType)
 	if err != nil {
+		slog.Error(fmt.Sprintf("Error decoding Purchase Type: %v", err))
 		http.Error(w, fmt.Sprintf("Error decoding Purchase Type: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if err := purchaseType.Validate(false); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := pt.usecase.UpdatePurchaseType(purchaseType); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -73,19 +79,17 @@ func (pt *controllerPurchaseType) UpdatePurchaseType(rep *repository.Repository,
 
 func (pt *controllerPurchaseType) DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
-	if idRequest == "" {
-		http.Error(w, "ID is required", http.StatusBadRequest)
-		return
-	}
-
-	id, err := uuid.Parse(idRequest)
+	
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = pt.usecase.DeletePurchaseType(id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -95,19 +99,17 @@ func (pt *controllerPurchaseType) DeletePurchaseType(rep *repository.Repository,
 
 func (pt *controllerPurchaseType) FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
-	if idRequest == "" {
-		http.Error(w, "ID is required", http.StatusBadRequest)
-		return
-	}
 	
-	id, err := uuid.Parse(idRequest)
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
 	purchaseType, err := pt.usecase.FindPurchaseTypeByID(id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -118,6 +120,7 @@ func (pt *controllerPurchaseType) FindPurchaseTypeByID(rep *repository.Repositor
 func (pt *controllerPurchaseType) FindAllPurchaseTypes(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	purchaseTypes, err := pt.usecase.FindAllPurchaseTypes()
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

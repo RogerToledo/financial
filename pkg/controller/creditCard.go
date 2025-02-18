@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/me/financial/pkg/entity"
 	"github.com/me/financial/pkg/repository"
 	"github.com/me/financial/pkg/usecase"
@@ -31,16 +31,19 @@ func (c *controllerCreditCard) CreateCreditCard(rep *repository.Repository, w ht
 	var creditCard entity.CreditCard
 
 	if err := json.NewDecoder(r.Body).Decode(&creditCard); err != nil {
+		slog.Error(fmt.Sprintf("Error decoding credit card: %v", err))
 		http.Error(w, fmt.Sprintf("Error decoding credit card: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if err := creditCard.Validate(true); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := c.useCase.CreateCreditCard(creditCard); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -52,16 +55,19 @@ func (c *controllerCreditCard) UpdateCreditCard(rep *repository.Repository, w ht
 	var creditCard entity.CreditCard
 
 	if err := json.NewDecoder(r.Body).Decode(&creditCard); err != nil {
+		slog.Error(fmt.Sprintf("Error decoding credit card: %v", err))
 		http.Error(w, fmt.Sprintf("Error decoding credit card: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if err := creditCard.Validate(false); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if err := c.useCase.UpdateCreditCard(creditCard); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -71,18 +77,16 @@ func (c *controllerCreditCard) UpdateCreditCard(rep *repository.Repository, w ht
 
 func (c *controllerCreditCard) DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
-	if idRequest == "" {
-		http.Error(w, "ID is required", http.StatusBadRequest)
-		return
-	}
-
-	id, err := uuid.Parse(idRequest)
+	
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if err := c.useCase.DeleteCreditCard(id); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -92,19 +96,17 @@ func (c *controllerCreditCard) DeleteCreditCard(rep *repository.Repository, w ht
 
 func (c *controllerCreditCard) FindCreditCardByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
-	if idRequest == "" {
-		http.Error(w, "ID is required", http.StatusBadRequest)
-		return
-	}
 
-	id, err := uuid.Parse(idRequest)
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	creditCard, err := c.useCase.FindCreditCardByID(id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -115,6 +117,7 @@ func (c *controllerCreditCard) FindCreditCardByID(rep *repository.Repository, w 
 func (c *controllerCreditCard) FindAllCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	creditCard, err := c.useCase.FindAllCreditCards()
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

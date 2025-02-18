@@ -2,7 +2,6 @@ package router
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/me/financial/config"
@@ -18,7 +17,8 @@ func InitializeRoutes() {
 	}
 	defer func () {
 		if err := db.Close(); err != nil {
-			log.Printf("error trying close database: %v", err)
+			errMsg := fmt.Sprintf("error trying close database: %v", err)
+			slog.Error(errMsg)
 		}
 	}()	
 
@@ -32,6 +32,6 @@ func InitializeRoutes() {
 	PurchaseTypeRoutes(mux, rep)
 	PurchaseRoutes(mux, rep)
 
-	slog.Info("Server running on port %s", config.ServerPort())
+	slog.Info("Server running on port " + config.ServerPort())
 	http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort()), mux)
 }

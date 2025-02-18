@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/me/financial/pkg/entity"
 	"github.com/me/financial/pkg/repository"
 	"github.com/me/financial/pkg/usecase"
@@ -35,16 +35,19 @@ func (p *purchaseController) CreatePurchase(rep *repository.Repository , w http.
 
 	err := json.NewDecoder(r.Body).Decode(&purchase)
 	if err != nil {
+		slog.Error(fmt.Sprintf("Error decoding Purchase: %v", err))
 		http.Error(w, fmt.Sprintf("Error decoding Purchase: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if err := purchase.Validate(); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := rep.Purchase.Create(purchase); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -57,16 +60,19 @@ func (p *purchaseController) UpdatePurchase(rep *repository.Repository, w http.R
 
 	err := json.NewDecoder(r.Body).Decode(&purchase)
 	if err != nil {
+		slog.Error(fmt.Sprintf("Error decoding Purchase: %v", err))
 		http.Error(w, fmt.Sprintf("Error decoding Purchase: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if err := purchase.Validate(); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := rep.Purchase.Update(purchase); err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -75,14 +81,18 @@ func (p *purchaseController) UpdatePurchase(rep *repository.Repository, w http.R
 }
 
 func (p *purchaseController) DeletePurchase(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	idRequest := r.PathValue("id")
+	
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = rep.Purchase.Delete(id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -91,14 +101,18 @@ func (p *purchaseController) DeletePurchase(rep *repository.Repository, w http.R
 }
 
 func (p *purchaseController) FindPurchaseByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	idRequest := r.PathValue("id")
+	
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		fmt.Sprintf(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
 	purchase, err := rep.Purchase.FindByID(id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -111,6 +125,7 @@ func (p *purchaseController) FindPurchaseByDate(rep *repository.Repository, w ht
 	
 	purchases, err := p.useCase.FindPurchaseByDate(date)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -123,6 +138,7 @@ func (p *purchaseController) FindPurchaseByMonth(rep *repository.Repository, w h
 	
 	purchases, err := p.useCase.FindPurchaseByMonth(date)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -131,14 +147,18 @@ func (p *purchaseController) FindPurchaseByMonth(rep *repository.Repository, w h
 }
 
 func (p *purchaseController) FindPurchaseByPerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	idRequest := r.PathValue("id")
+	
+	id, err := entity.ValidateID(idRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error converting ID to UUID: %v", err), http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	
 	purchases, err := p.useCase.FindPurchaseByPerson(id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -149,6 +169,7 @@ func (p *purchaseController) FindPurchaseByPerson(rep *repository.Repository, w 
 func (p *purchaseController) FindAllPurchases(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	purchases, err := p.useCase.FindAllPurchases()
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
