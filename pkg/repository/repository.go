@@ -25,4 +25,3 @@ func NewRepository(db *sql.DB) *Repository {
 		Purchase:     purchase,
 	}
 }
-

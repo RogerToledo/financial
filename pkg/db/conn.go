@@ -8,8 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-
-
 func NewDB() (*sql.DB, error) {
 	connString := config.DB().StringConn
 
