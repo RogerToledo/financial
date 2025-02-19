@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -56,6 +57,10 @@ func (p *Purchase) Validate() error {
 		invalidFields = append(invalidFields, "Data")
 	}
 
+	if err := ValidateDate(p.Date); err != nil {
+		invalidFields = append(invalidFields, "Valid Data")
+	}
+
 	if p.IDPaymentType == uuid.Nil {
 		invalidFields = append(invalidFields, "ID of Payment Type")
 	}
@@ -93,6 +98,21 @@ func (p *Purchase) Validate() error {
 
 	if field != "" && msg != "" {
 		return fmt.Errorf("%s \n%s", msg, field)
+	}
+
+	return nil
+}
+func ValidateDate(date string) error {
+	if _, err := time.Parse("2006-01-02", date); err != nil {
+		return fmt.Errorf("The date is invalid")
+	}
+
+	return nil
+}
+
+func ValidateYearMonth(date string) error {
+	if _, err := time.Parse("2006-01", date); err != nil {
+		return fmt.Errorf("The date is invalid")
 	}
 
 	return nil

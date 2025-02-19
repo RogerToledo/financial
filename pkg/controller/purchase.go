@@ -122,6 +122,12 @@ func (p *purchaseController) FindPurchaseByID(rep *repository.Repository, w http
 
 func (p *purchaseController) FindPurchaseByDate(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	date := r.PathValue("date")
+
+	if err := entity.ValidateDate(date); err != nil {
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	
 	purchases, err := p.useCase.FindPurchaseByDate(date)
 	if err != nil {
@@ -135,6 +141,12 @@ func (p *purchaseController) FindPurchaseByDate(rep *repository.Repository, w ht
 
 func (p *purchaseController) FindPurchaseByMonth(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
 	date := r.PathValue("date")
+
+	if err := entity.ValidateYearMonth(date); err != nil {
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	
 	purchases, err := p.useCase.FindPurchaseByMonth(date)
 	if err != nil {
