@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/google/uuid"
+	"github.com/me/financial/pkg/dto"
 	"github.com/me/financial/pkg/entity"
 	"github.com/me/financial/pkg/repository"
 )
@@ -10,11 +11,11 @@ type PurchaseUseCase interface {
 	CreatePurchase(purchase entity.Purchase) error
 	UpdatePurchase(purchase entity.Purchase) error
 	DeletePurchase(id uuid.UUID) error
-	FindPurchaseByID(id uuid.UUID) (entity.PurchaseResponse, error)
-	FindPurchaseByDate(date string) (entity.PurchaseResponseTotal, error)
-	FindPurchaseByMonth(date string) (entity.PurchaseResponseTotal, error)
-	FindPurchaseByPerson(id uuid.UUID) (entity.PurchaseResponseTotal, error)
-	FindAllPurchases() ([]entity.PurchaseResponse, error)
+	FindPurchaseByID(id uuid.UUID) (dto.PurchaseResponse, error)
+	FindPurchaseByDate(date string) (dto.PurchaseResponseTotal, error)
+	FindPurchaseByMonth(date string) (dto.PurchaseResponseTotal, error)
+	FindPurchaseByPerson(id uuid.UUID) (dto.PurchaseResponseTotal, error)
+	FindAllPurchases() ([]dto.PurchaseResponse, error)
 }
 
 type Purchase struct {
@@ -28,6 +29,8 @@ func NewPurchaseUseCase(r repository.RepositoryPurchase) PurchaseUseCase {
 }
 
 func (p *Purchase) CreatePurchase(purchase entity.Purchase) error {
+	purchase.Installment = purchase.Amount / float64(purchase.InstallmentNumber)
+
 	if err := p.repositoryPurchase.Create(purchase); err != nil {
 		return err
 	}
@@ -51,19 +54,19 @@ func (p *Purchase) DeletePurchase(id uuid.UUID) error {
 	return nil
 }
 
-func (p *Purchase) FindPurchaseByID(id uuid.UUID) (entity.PurchaseResponse, error) {
+func (p *Purchase) FindPurchaseByID(id uuid.UUID) (dto.PurchaseResponse, error) {
 	purchase, err := p.repositoryPurchase.FindByID(id)
 	if err != nil {
-		return entity.PurchaseResponse{}, err
+		return dto.PurchaseResponse{}, err
 	}
 
 	return purchase, err
 }
 
-func (p *Purchase) FindPurchaseByDate(date string) (entity.PurchaseResponseTotal, error) {
+func (p *Purchase) FindPurchaseByDate(date string) (dto.PurchaseResponseTotal, error) {
 	purchases, err := p.repositoryPurchase.FindByDate(date)
 	if err != nil {
-		return entity.PurchaseResponseTotal{}, err
+		return dto.PurchaseResponseTotal{}, err
 	}
 
 	response := processResponse(purchases)
@@ -71,10 +74,10 @@ func (p *Purchase) FindPurchaseByDate(date string) (entity.PurchaseResponseTotal
 	return response, err
 }
 
-func (p *Purchase) FindPurchaseByMonth(date string) (entity.PurchaseResponseTotal, error) {
+func (p *Purchase) FindPurchaseByMonth(date string) (dto.PurchaseResponseTotal, error) {
 	purchases, err := p.repositoryPurchase.FindByMonth(date)
 	if err != nil {
-		return entity.PurchaseResponseTotal{}, err
+		return dto.PurchaseResponseTotal{}, err
 	}
 
 	response := processResponse(purchases)
@@ -82,10 +85,10 @@ func (p *Purchase) FindPurchaseByMonth(date string) (entity.PurchaseResponseTota
 	return response, err
 }
 
-func (p *Purchase) FindPurchaseByPerson(personID uuid.UUID) (entity.PurchaseResponseTotal, error) {
+func (p *Purchase) FindPurchaseByPerson(personID uuid.UUID) (dto.PurchaseResponseTotal, error) {
 	purchases, err := p.repositoryPurchase.FindByPerson(personID)
 	if err != nil {
-		return entity.PurchaseResponseTotal{}, err
+		return dto.PurchaseResponseTotal{}, err
 	}
 
 	response := processResponse(purchases)
@@ -93,7 +96,7 @@ func (p *Purchase) FindPurchaseByPerson(personID uuid.UUID) (entity.PurchaseResp
 	return response, err
 }
 
-func (p *Purchase) FindAllPurchases() ([]entity.PurchaseResponse, error) {
+func (p *Purchase) FindAllPurchases() ([]dto.PurchaseResponse, error) {
 	purchases, err := p.repositoryPurchase.FindAll()
 	if err != nil {
 		return nil, err
@@ -102,14 +105,14 @@ func (p *Purchase) FindAllPurchases() ([]entity.PurchaseResponse, error) {
 	return purchases, err
 }
 
-func processResponse(purchases []entity.PurchaseResponse) entity.PurchaseResponseTotal {
+func processResponse(purchases []dto.PurchaseResponse) dto.PurchaseResponseTotal {
 	total := 0.0
 
 	for _, purchase := range purchases {
 		total += purchase.Amount
 	}
 
-	response := entity.PurchaseResponseTotal{
+	response := dto.PurchaseResponseTotal{
 		Responses: purchases,
 		Quantity:  len(purchases),
 		Total:     total,

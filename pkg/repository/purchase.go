@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/me/financial/pkg/dto"
 	"github.com/me/financial/pkg/entity"
 )
 
@@ -12,11 +13,11 @@ type RepositoryPurchase interface {
 	Create(p entity.Purchase) error
 	Update(p entity.Purchase) error
 	Delete(id uuid.UUID) error
-	FindByID(id uuid.UUID) (entity.PurchaseResponse, error)
-	FindByDate(date string) ([]entity.PurchaseResponse, error)
-	FindByMonth(date string) ([]entity.PurchaseResponse, error)
-	FindByPerson(id uuid.UUID) ([]entity.PurchaseResponse, error)
-	FindAll() ([]entity.PurchaseResponse, error)
+	FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
+	FindByDate(date string) ([]dto.PurchaseResponse, error)
+	FindByMonth(date string) ([]dto.PurchaseResponse, error)
+	FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, error)
+	FindAll() ([]dto.PurchaseResponse, error)
 }
 
 type repositoryPurchase struct {
@@ -145,7 +146,7 @@ func (r repositoryPurchase) Delete(id uuid.UUID) error {
 	return nil
 }
 
-func (r repositoryPurchase) FindByID(id uuid.UUID) (entity.PurchaseResponse, error) {
+func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error) {
 	query := `SELECT 
 				p.id, 
 				p.description, 
@@ -171,10 +172,10 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (entity.PurchaseResponse, err
 	
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return entity.PurchaseResponse{}, fmt.Errorf("error trying prepare statment: %v", err)
+		return dto.PurchaseResponse{}, fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var pt entity.PurchaseResponse
+	var pt dto.PurchaseResponse
 	if err = stmt.QueryRow(id).Scan(
 		&pt.ID, 
 		&pt.Description,
@@ -188,22 +189,22 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (entity.PurchaseResponse, err
 		&pt.CreditCard,
 		&pt.Person,
 		); err != nil && err != sql.ErrNoRows {
-		return entity.PurchaseResponse{}, fmt.Errorf("error trying find purchase: %v", err)
+		return dto.PurchaseResponse{}, fmt.Errorf("error trying find purchase: %v", err)
 	}
 
 	if err != nil && err == sql.ErrNoRows {
-		return entity.PurchaseResponse{}, fmt.Errorf("does not exist purchase with this id")
+		return dto.PurchaseResponse{}, fmt.Errorf("does not exist purchase with this id")
 	}
 
 	if err := stmt.Close(); err != nil {
-		return entity.PurchaseResponse{}, fmt.Errorf("error trying close statment: %v", err)
+		return dto.PurchaseResponse{}, fmt.Errorf("error trying close statment: %v", err)
 	}
 
 	return pt, nil
 }
 
-func (r repositoryPurchase) FindByDate(date string) ([]entity.PurchaseResponse, error) {
-	var purchases []entity.PurchaseResponse
+func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, error) {
+	var purchases []dto.PurchaseResponse
 		
 	query := `SELECT 
 				p.id, 
@@ -239,7 +240,7 @@ func (r repositoryPurchase) FindByDate(date string) ([]entity.PurchaseResponse, 
 	}
 
 	for rows.Next() {
-		var p entity.PurchaseResponse
+		var p dto.PurchaseResponse
 		if err = rows.Scan(
 			&p.ID,
 			&p.Description,
@@ -274,8 +275,8 @@ func (r repositoryPurchase) FindByDate(date string) ([]entity.PurchaseResponse, 
 	return purchases, nil
 }
 
-func (r repositoryPurchase) FindByMonth(date string) ([]entity.PurchaseResponse, error){
-	var purchases []entity.PurchaseResponse
+func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, error){
+	var purchases []dto.PurchaseResponse
 
 	query := `SELECT 
 				p.id, 
@@ -312,7 +313,7 @@ func (r repositoryPurchase) FindByMonth(date string) ([]entity.PurchaseResponse,
 	}
 
 	for rows.Next() {
-		var p entity.PurchaseResponse
+		var p dto.PurchaseResponse
 		if err = rows.Scan(
 			&p.ID,
 			&p.Description,
@@ -347,7 +348,7 @@ func (r repositoryPurchase) FindByMonth(date string) ([]entity.PurchaseResponse,
 	return purchases, nil
 }
 
-func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]entity.PurchaseResponse, error) {
+func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, error) {
 	
 	query := `SELECT 
 				p.id, 
@@ -383,10 +384,10 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]entity.PurchaseRespons
 		return nil, fmt.Errorf("error trying find purchase by person: %v", err)
 	}
 
-	var purchases []entity.PurchaseResponse
+	var purchases []dto.PurchaseResponse
 
 	for rows.Next() {
-		var p entity.PurchaseResponse
+		var p dto.PurchaseResponse
 		if err = rows.Scan(
 			&p.ID,
 			&p.Description,
@@ -421,7 +422,7 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]entity.PurchaseRespons
 	return purchases, nil
 }
 
-func (r repositoryPurchase) FindAll() ([]entity.PurchaseResponse, error) {
+func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 	query := `SELECT 
 				p.id, 
 				p.description, 
@@ -450,10 +451,10 @@ func (r repositoryPurchase) FindAll() ([]entity.PurchaseResponse, error) {
 		return nil, fmt.Errorf("error trying find all purchase: %v", err)
 	}
 
-	var purchases []entity.PurchaseResponse
+	var purchases []dto.PurchaseResponse
 
 	for rows.Next() {
-		var p entity.PurchaseResponse
+		var p dto.PurchaseResponse
 		if err = rows.Scan(
 			&p.ID,
 			&p.Description,
