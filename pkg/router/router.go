@@ -13,7 +13,8 @@ import (
 func InitializeRoutes() {
 	db, err := db.NewDB()
 	if err != nil {
-		panic(err)
+		slog.Error("error trying to connect to database")
+		return
 	}
 	defer func () {
 		if err := db.Close(); err != nil {
