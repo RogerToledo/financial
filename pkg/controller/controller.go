@@ -18,8 +18,8 @@ func NewController(r *repository.Repository) *Controller {
 	cc := usecase.NewCreditCardUseCase(r.CreditCard)
 	pt := usecase.NewPaymentTypeUseCase(r.PaymentType)
 	purt := usecase.NewPurchaseTypeUseCase(r.PurchaseType)
-	pur := usecase.NewPurchaseUseCase(r.Purchase)
-	
+	pur := usecase.NewPurchaseUseCase(r.All)
+	usecase.NewInstallmentUseCase(r.All)
 
 	person       := NewPersonController(p)
 	creditCard   := NewCreditCardController(cc)

@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/me/financial/pkg/entity"
 )
@@ -12,7 +14,8 @@ type PurchaseRequest struct {
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
 	InstallmentNumber int     `json:"installment_number"`
-	Place	          string  `json:"place"`
+	Installment       float64 `json:"installment"`
+	Place	          string    `json:"place"`
 	IDPaymentType     uuid.UUID `json:"id_payment_type"`
 	IDCreditCard	  uuid.UUID `json:"id_credit_card"`
 	IDPurchaseType    uuid.UUID `json:"id_purchase_type"`
@@ -39,18 +42,30 @@ type PurchaseResponseTotal struct {
 	Total     float64            `json:"total"`
 }
 
-func (p *PurchaseRequest) ToEntity() entity.Purchase {
-	return entity.Purchase{
+func (p *PurchaseRequest) ToEntity() (entity.Purchase, error) {
+	convertedDate, err := entity.ConverDateDB(p.Date)
+	if err != nil {
+		return entity.Purchase{}, fmt.Errorf("Error converting date: %v", err)
+	}
+
+	var installment entity.Installment
+
+	installment.Number = p.InstallmentNumber
+	installment.Value  = p.Installment
+
+	purchase := entity.Purchase{
 		ID:                p.ID,
 		Description:       p.Description,
 		Type: 	           p.Type,
 		Amount:            p.Amount,
-		Date:              p.Date,
-		InstallmentNumber: p.InstallmentNumber,
+		Date:              convertedDate,
+		Installment:       installment,
 		Place:	           p.Place,
 		IDPaymentType:     p.IDPaymentType,
 		IDCreditCard:	   p.IDCreditCard,
 		IDPurchaseType:    p.IDPurchaseType,
 		IDPerson:	       p.IDPerson,
 	}
+
+	return purchase, nil
 }

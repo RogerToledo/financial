@@ -14,8 +14,8 @@ type Purchase struct {
 	Type 	          string  `json:"type"`
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
-	InstallmentNumber int     `json:"installment_number"`
-	Installment       float64 `json:"installment"`
+	Installment       Installment `json:"installment_number"`
+	Paid			  bool    `json:"paid"`
 	Place	          string  `json:"place"`
 	IDPaymentType     uuid.UUID `json:"id_payment_type"`
 	IDCreditCard	  uuid.UUID `json:"id_credit_card"`
@@ -75,7 +75,7 @@ func ValidateDate(date string) error {
 }
 
 func ValidateYearMonth(date string) error {
-	if _, err := time.Parse("2006-01", date); err != nil {
+	if _, err := time.Parse("01/2006", date); err != nil {
 		return fmt.Errorf("The date is invalid")
 	}
 

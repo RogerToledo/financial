@@ -10,7 +10,7 @@ import (
 )
 
 type RepositoryPurchase interface {
-	Create(p entity.Purchase) error
+	Create(p entity.Purchase) (uuid.UUID, error)
 	Update(p entity.Purchase) error
 	Delete(id uuid.UUID) error
 	FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
@@ -28,29 +28,27 @@ func NewRepositoryPurchase(db *sql.DB) *repositoryPurchase {
 	return &repositoryPurchase{db}
 }
 
-func (r repositoryPurchase) Create(p entity.Purchase) error {
+func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
 	query := `INSERT INTO financial.purchase(
 		id,
 		description, 
 		amount, 
 		"date", 
-		installment_number, 
-		installment, 
 		place, 
 		id_payment_type, 
 		id_purchase_type, 
 		id_credit_card, 
 		id_person
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return fmt.Errorf("error trying prepare statment: %v", err)
+		return uuid.Nil, fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
 	id, err := uuid.NewUUID()
 	if err != nil {
-		return fmt.Errorf("error trying create uuid: %v", err)
+		return uuid.Nil, fmt.Errorf("error trying create uuid: %v", err)
 	} 
 	
 	if _, err = stmt.Exec(
@@ -58,22 +56,20 @@ func (r repositoryPurchase) Create(p entity.Purchase) error {
 		p.Description,
 		p.Amount,
 		p.Date,
-		p.InstallmentNumber,
-		p.Installment,
 		p.Place,
 		p.IDPaymentType,
 		p.IDPurchaseType,
 		p.IDCreditCard,
 		p.IDPerson,
 	); err != nil {
-		return fmt.Errorf("error trying insert purchase type: %v", err)
+		return uuid.Nil, fmt.Errorf("error trying insert purchase type: %v", err)
 	}
 
 	if err := stmt.Close(); err != nil {
-		return fmt.Errorf("error trying close statment: %v", err)
+		return uuid.Nil, fmt.Errorf("error trying close statment: %v", err)
 	}
 
-	return nil
+	return id, nil
 }
 
 func (r repositoryPurchase) Update(p entity.Purchase) error {
@@ -99,8 +95,8 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 			p.Description,
 			p.Amount,
 			p.Date,
-			p.InstallmentNumber,
-			p.Installment,
+			p.Installment.Number,
+			p.Installment.Value,
 			p.Place,
 			p.IDPaymentType,
 			p.IDPurchaseType,

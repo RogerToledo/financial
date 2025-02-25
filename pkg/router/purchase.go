@@ -12,34 +12,34 @@ func PurchaseRoutes(mux *http.ServeMux, rep *repository.Repository) {
 	c := controller.NewController(rep)
 	
 	mux.HandleFunc("POST /purchase", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.CreatePurchase(rep, w, r)
+		c.Purchase.Create(rep, w, r)
 	})
 	
 	mux.HandleFunc("PUT /purchase", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.UpdatePurchase(rep, w, r)
+		c.Purchase.Update(rep, w, r)
 	})
 
 	mux.HandleFunc("DELETE /purchase/{id}", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.DeletePurchase(rep, w, r)
+		c.Purchase.Delete(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchase/{id}", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.FindPurchaseByID(rep, w, r)
+		c.Purchase.FindByID(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchase/date/{date}", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.FindPurchaseByDate(rep, w, r)
+		c.Purchase.FindByDate(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchase/month/{date}", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.FindPurchaseByMonth(rep, w, r)
+		c.Purchase.FindByMonth(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchase/person/{id}", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.FindPurchaseByPerson(rep, w, r)
+		c.Purchase.FindByPerson(rep, w, r)
 	})
 
 	mux.HandleFunc("GET /purchase", func(w http.ResponseWriter, r *http.Request) {
-		c.Purchase.FindAllPurchases(rep, w, r)
+		c.Purchase.FindAll(rep, w, r)
 	})
 }

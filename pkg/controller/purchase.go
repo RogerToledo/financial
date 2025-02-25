@@ -44,7 +44,12 @@ func (p *purchaseController) Create(rep *repository.Repository , w http.Response
 		return
 	}
 
-	purchase = purchaseRequest.ToEntity()
+	purchase, err = purchaseRequest.ToEntity()
+	if err != nil {
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	if err := purchase.Validate(); err != nil {
 		slog.Error(err.Error())
@@ -74,7 +79,11 @@ func (p *purchaseController) Update(rep *repository.Repository, w http.ResponseW
 		return
 	}
 
-	purchase = purchaseRequest.ToEntity()
+	purchase, err = purchaseRequest.ToEntity()
+	if err != nil {
+		slog.Error(err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 
 	if err := purchase.Validate(); err != nil {
 		slog.Error(err.Error())

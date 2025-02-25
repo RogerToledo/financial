@@ -16,15 +16,9 @@ func InitializeRoutes() {
 		slog.Error("error trying to connect to database")
 		return
 	}
-	defer func () {
-		if err := db.Close(); err != nil {
-			errMsg := fmt.Sprintf("error trying close database: %v", err)
-			slog.Error(errMsg)
-		}
-	}()	
 
 	rep := repository.NewRepository(db)
-
+	
 	mux := http.NewServeMux()
 	
 	PersonRoutes(mux, rep)

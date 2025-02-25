@@ -2,6 +2,8 @@ package entity
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -12,4 +14,26 @@ func ValidateID(idRequest string) (uuid.UUID, error) {
 	}
 
 	return id, nil
+}
+
+func ConverDateDB(date string) (string, error) {
+	t1, err := time.Parse("02/01/2006", date)
+	if err != nil {
+		return "", fmt.Errorf("Error converting date: %v", err)
+	}
+
+	dateFormated := t1.Format("2006-01-02")
+
+	return dateFormated, nil
+}
+
+func ConverDate(date string) (string, error) {
+	t1, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return "", fmt.Errorf("Error converting date: %v", err)
+	}
+
+	dateFormated := t1.Format("02/01/2006")
+
+	return dateFormated, nil
 }
