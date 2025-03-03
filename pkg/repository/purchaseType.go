@@ -26,7 +26,7 @@ func NewRepositoryPurchaseType(db *sql.DB) *repositoryPurchaseType {
 }
 
 func (r repositoryPurchaseType) Create(p entity.PurchaseType) error {
-	query := `INSERT INTO finance.purchase_type (id, name) VALUES ($1, $2)`
+	query := `INSERT INTO purchase_type (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -48,7 +48,7 @@ func (r repositoryPurchaseType) Create(p entity.PurchaseType) error {
 }
 
 func (r repositoryPurchaseType) Update(pt entity.PurchaseType) error {
-	query := `UPDATE finance.purchase_type SET name = $1 WHERE id = $2`
+	query := `UPDATE purchase_type SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -70,7 +70,7 @@ func (r repositoryPurchaseType) Update(pt entity.PurchaseType) error {
 }
 
 func (r repositoryPurchaseType) Delete(id uuid.UUID) error {
-	query := `DELETE FROM finance.purchase_type WHERE id = $1`
+	query := `DELETE FROM purchase_type WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -94,7 +94,7 @@ func (r repositoryPurchaseType) Delete(id uuid.UUID) error {
 }
 
 func (r repositoryPurchaseType) FindByID(id uuid.UUID) (entity.PurchaseType, error) {
-	query := "SELECT id, name FROM finance.purchase_type WHERE id = $1"
+	query := "SELECT id, name FROM purchase_type WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -118,7 +118,7 @@ func (r repositoryPurchaseType) FindByID(id uuid.UUID) (entity.PurchaseType, err
 }
 
 func (r repositoryPurchaseType) FindAll() ([]entity.PurchaseType, error) {
-	query := "SELECT id, name FROM finance.purchase_type ORDER BY name"
+	query := "SELECT id, name FROM purchase_type ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {

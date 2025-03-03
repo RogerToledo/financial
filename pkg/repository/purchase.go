@@ -29,7 +29,7 @@ func NewRepositoryPurchase(db *sql.DB) *repositoryPurchase {
 }
 
 func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
-	query := `INSERT INTO finance.purchase(
+	query := `INSERT INTO purchase(
 		id,
 		description, 
 		amount, 
@@ -73,7 +73,7 @@ func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
 }
 
 func (r repositoryPurchase) Update(p entity.Purchase) error {
-	query := `UPDATE finance.purchase
+	query := `UPDATE purchase
 		SET description = $1, 
 			amount = $2, 
 			"date" = $3, 
@@ -119,7 +119,7 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 }
 
 func (r repositoryPurchase) Delete(id uuid.UUID) error {
-	query := `DELETE FROM finance.purchase WHERE id = $1`
+	query := `DELETE FROM purchase WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -155,14 +155,14 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 				purt."name", 
 				cc."owner", 
 				per."name" 
-			FROM finance.purchase p
-			INNER JOIN finance.payment_type pt 
+			FROM purchase p
+			INNER JOIN payment_type pt 
 				on p.id_payment_type = pt.id 
-			INNER JOIN finance.purchase_type purt	
+			INNER JOIN purchase_type purt	
 				on p.id_purchase_type = purt.id 
-			INNER JOIN finance.credit_card cc	
+			INNER JOIN credit_card cc	
 				on p.id_credit_card = cc.id
-			INNER JOIN finance.person per	
+			INNER JOIN person per	
 				on p.id_person = per.id 	
 			WHERE p.id = $1;`
 	
@@ -214,14 +214,14 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM finance.purchase p
-			INNER JOIN finance.payment_type pt 
+			FROM purchase p
+			INNER JOIN payment_type pt 
 				on p.id_payment_type = pt.id 
-			INNER JOIN finance.purchase_type purt	
+			INNER JOIN purchase_type purt	
 				on p.id_purchase_type = purt.id 
-			INNER JOIN finance.credit_card cc	
+			INNER JOIN credit_card cc	
 				on p.id_credit_card = cc.id
-			INNER JOIN finance.person per	
+			INNER JOIN person per	
 				on p.id_person = per.id 
 			WHERE "date" = $1;`
 
@@ -286,14 +286,14 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM finance.purchase p
-			INNER JOIN finance.payment_type pt 
+			FROM purchase p
+			INNER JOIN payment_type pt 
 				on p.id_payment_type = pt.id 
-			INNER JOIN finance.purchase_type purt	
+			INNER JOIN purchase_type purt	
 				on p.id_purchase_type = purt.id 
-			INNER JOIN finance.credit_card cc	
+			INNER JOIN credit_card cc	
 				on p.id_credit_card = cc.id
-			INNER JOIN finance.person per	
+			INNER JOIN person per	
 				on p.id_person = per.id 
 			WHERE to_char(p."date", 'YYYY-MM') = $1
 			ORDER BY p."date";`
@@ -358,14 +358,14 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM finance.purchase p
-			INNER JOIN finance.payment_type pt 
+			FROM purchase p
+			INNER JOIN payment_type pt 
 				ON p.id_payment_type = pt.id 
-			INNER JOIN finance.purchase_type purt	
+			INNER JOIN purchase_type purt	
 				ON p.id_purchase_type = purt.id 
-			INNER JOIN finance.credit_card cc	
+			INNER JOIN credit_card cc	
 				ON p.id_credit_card = cc.id
-			INNER JOIN finance.person per	
+			INNER JOIN person per	
 				ON p.id_person = per.id 
 			WHERE p.id_person = $1
 			ORDER BY p."date";`
@@ -431,14 +431,14 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM finance.purchase p
-			INNER JOIN finance.payment_type pt 
+			FROM purchase p
+			INNER JOIN payment_type pt 
 				ON p.id_payment_type = pt.id 
-			INNER JOIN finance.purchase_type purt	
+			INNER JOIN purchase_type purt	
 				ON p.id_purchase_type = purt.id 
-			INNER JOIN finance.credit_card cc	
+			INNER JOIN credit_card cc	
 				ON p.id_credit_card = cc.id
-			INNER JOIN finance.person per	
+			INNER JOIN person per	
 				ON p.id_person = per.id 
 			ORDER BY "date";`
 

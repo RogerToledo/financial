@@ -25,7 +25,7 @@ func NewRepositoryCreditCard(db *sql.DB) *repositoryCreditCard {
 }
 
 func (r repositoryCreditCard) Create(cc entity.CreditCard) error {
-	query := `INSERT INTO finance.credit_card (id, owner, invoice_closing_day) VALUES ($1, $2, $3)`
+	query := `INSERT INTO credit_card (id, owner, invoice_closing_day) VALUES ($1, $2, $3)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -48,7 +48,7 @@ func (r repositoryCreditCard) Create(cc entity.CreditCard) error {
 }
 
 func (r repositoryCreditCard) Update(cc entity.CreditCard) error {
-	query := `UPDATE finance.credit_card 
+	query := `UPDATE credit_card 
 				SET owner = $1,
 					invoice_closing_day = $2 
 				WHERE id = $3`
@@ -73,7 +73,7 @@ func (r repositoryCreditCard) Update(cc entity.CreditCard) error {
 }
 
 func (r repositoryCreditCard) Delete(id uuid.UUID) error {
-	query := `DELETE FROM finance.credit_card WHERE id = $1`
+	query := `DELETE FROM credit_card WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -97,7 +97,7 @@ func (r repositoryCreditCard) Delete(id uuid.UUID) error {
 }
 
 func (r repositoryCreditCard) FindByID(id uuid.UUID) (entity.CreditCard, error) {
-	query := "SELECT id, owner, invoice_closing_day FROM finance.credit_card WHERE id = $1"
+	query := "SELECT id, owner, invoice_closing_day FROM credit_card WHERE id = $1"
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -121,7 +121,7 @@ func (r repositoryCreditCard) FindByID(id uuid.UUID) (entity.CreditCard, error) 
 }
 
 func (r repositoryCreditCard) FindAll() ([]entity.CreditCard, error) {
-	query := "SELECT id, owner, invoice_closing_day FROM finance.credit_card order by owner"
+	query := "SELECT id, owner, invoice_closing_day FROM credit_card order by owner"
 
 	rows, err := r.db.Query(query)
 	if err != nil {

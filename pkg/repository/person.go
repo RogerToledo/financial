@@ -25,7 +25,7 @@ func NewRepositoryPerson(db *sql.DB) *repositoryPerson {
 }
 
 func (r repositoryPerson) Create(p entity.Person) error {
-	query := `INSERT INTO finance.person (id, name) VALUES ($1, $2)`
+	query := `INSERT INTO person (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -48,7 +48,7 @@ func (r repositoryPerson) Create(p entity.Person) error {
 }
 
 func (r repositoryPerson) Update(p entity.Person) error {
-	query := `UPDATE finance.person SET name = $1 WHERE id = $2`
+	query := `UPDATE person SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -70,7 +70,7 @@ func (r repositoryPerson) Update(p entity.Person) error {
 }
 
 func (r repositoryPerson) Delete(id uuid.UUID) error {
-	query := `DELETE FROM finance.person WHERE id = $1`
+	query := `DELETE FROM person WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -94,7 +94,7 @@ func (r repositoryPerson) Delete(id uuid.UUID) error {
 }
 
 func (r repositoryPerson) FindByID(id uuid.UUID) (entity.Person, error) {
-	query := "SELECT id, name FROM finance.person WHERE id = $1"
+	query := "SELECT id, name FROM person WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -118,7 +118,7 @@ func (r repositoryPerson) FindByID(id uuid.UUID) (entity.Person, error) {
 }
 
 func (r repositoryPerson) FindAll() ([]entity.Person, error) {
-	query := "SELECT id, name FROM finance.person ORDER BY name"
+	query := "SELECT id, name FROM person ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {

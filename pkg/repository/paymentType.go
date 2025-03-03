@@ -25,7 +25,7 @@ func NewRepositoryPaymentType(db *sql.DB) *repositoryPaymentType {
 }
 
 func (r repositoryPaymentType) Create(p entity.PaymentType) error {
-	query := `INSERT INTO finance.payment_type (id, name) VALUES ($1, $2)`
+	query := `INSERT INTO payment_type (id, name) VALUES ($1, $2)`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -48,7 +48,7 @@ func (r repositoryPaymentType) Create(p entity.PaymentType) error {
 }
 
 func (r repositoryPaymentType) Update(pt entity.PaymentType) error {
-	query := `UPDATE finance.payment_type SET name = $1 WHERE id = $2`
+	query := `UPDATE payment_type SET name = $1 WHERE id = $2`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
@@ -70,7 +70,7 @@ func (r repositoryPaymentType) Update(pt entity.PaymentType) error {
 }
 
 func (r repositoryPaymentType) Delete(id uuid.UUID) error {
-	query := `DELETE FROM finance.payment_type WHERE id = $1`
+	query := `DELETE FROM payment_type WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -94,7 +94,7 @@ func (r repositoryPaymentType) Delete(id uuid.UUID) error {
 }
 
 func (r repositoryPaymentType) FindByID(id uuid.UUID) (entity.PaymentType, error) {
-	query := "SELECT id, name FROM finance.payment_type WHERE id = $1"
+	query := "SELECT id, name FROM payment_type WHERE id = $1"
 	
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -118,7 +118,7 @@ func (r repositoryPaymentType) FindByID(id uuid.UUID) (entity.PaymentType, error
 }
 
 func (r repositoryPaymentType) FindAll() ([]entity.PaymentType, error) {
-	query := "SELECT id, name FROM finance.payment_type ORDER BY name"
+	query := "SELECT id, name FROM payment_type ORDER BY name"
 
 	rows, err := r.db.Query(query)
 	if err != nil {
