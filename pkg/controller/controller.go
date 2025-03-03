@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/me/financial/pkg/repository"
-	"github.com/me/financial/pkg/usecase"
+	"github.com/me/finance/pkg/repository"
+	"github.com/me/finance/pkg/usecase"
 )
 
 type Controller struct {

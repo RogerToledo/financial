@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/me/financial/pkg/dto"
-	"github.com/me/financial/pkg/entity"
-	"github.com/me/financial/pkg/repository"
-	"github.com/me/financial/pkg/usecase"
+	"github.com/me/finance/pkg/dto"
+	"github.com/me/finance/pkg/entity"
+	"github.com/me/finance/pkg/repository"
+	"github.com/me/finance/pkg/usecase"
 )
 
 type ControllerPurchase interface {

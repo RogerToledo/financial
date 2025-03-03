@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/pkg/entity"
+	"github.com/me/finance/pkg/entity"
 )
 
 type RepositoryInstallment interface {
@@ -25,7 +25,7 @@ func NewRepositoryInstallment(db *sql.DB) *repositoryInstallment {
 }
 
 func (r *repositoryInstallment) Create(installment entity.Installment) error {
-	sql := `INSERT INTO financial.installment (id, description, number, value, month, paid, purchase_id) 
+	sql := `INSERT INTO finance.installment (id, description, number, value, month, paid, purchase_id) 
 			VALUES 
 			($1, $2, $3, $4, $5, $6, $7)`
 	

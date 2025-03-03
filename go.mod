@@ -1,4 +1,4 @@
-module github.com/me/financial
+module github.com/me/finance
 
 go 1.23.3
 

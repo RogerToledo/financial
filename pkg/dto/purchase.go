@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/pkg/entity"
+	"github.com/me/finance/pkg/entity"
 )
 
 type PurchaseRequest struct {

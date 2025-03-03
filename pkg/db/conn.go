@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/me/financial/config"
+	"github.com/me/finance/config"
 	_ "github.com/lib/pq"
 )
 

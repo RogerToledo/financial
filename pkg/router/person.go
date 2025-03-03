@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/me/financial/pkg/repository"
+	"github.com/me/finance/pkg/repository"
 
-	"github.com/me/financial/pkg/controller"
+	"github.com/me/finance/pkg/controller"
 )
 
 func PersonRoutes(mux *http.ServeMux, rep *repository.Repository) {

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/pkg/entity"
-	"github.com/me/financial/pkg/repository"
+	"github.com/me/finance/pkg/entity"
+	"github.com/me/finance/pkg/repository"
 )
 
 type InstallmentUseCase interface {

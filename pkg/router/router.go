@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/me/financial/config"
-	"github.com/me/financial/pkg/db"
-	"github.com/me/financial/pkg/repository"
+	"github.com/me/finance/config"
+	"github.com/me/finance/pkg/db"
+	"github.com/me/finance/pkg/repository"
 	"github.com/sagikazarmark/slog-shim"
 )
 

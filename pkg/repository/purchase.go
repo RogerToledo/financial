@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/me/financial/pkg/dto"
-	"github.com/me/financial/pkg/entity"
+	"github.com/me/finance/pkg/dto"
+	"github.com/me/finance/pkg/entity"
 )
 
 type RepositoryPurchase interface {
@@ -29,7 +29,7 @@ func NewRepositoryPurchase(db *sql.DB) *repositoryPurchase {
 }
 
 func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
-	query := `INSERT INTO financial.purchase(
+	query := `INSERT INTO finance.purchase(
 		id,
 		description, 
 		amount, 
@@ -73,7 +73,7 @@ func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
 }
 
 func (r repositoryPurchase) Update(p entity.Purchase) error {
-	query := `UPDATE financial.purchase
+	query := `UPDATE finance.purchase
 		SET description = $1, 
 			amount = $2, 
 			"date" = $3, 
@@ -119,7 +119,7 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 }
 
 func (r repositoryPurchase) Delete(id uuid.UUID) error {
-	query := `DELETE FROM financial.purchase WHERE id = $1`
+	query := `DELETE FROM finance.purchase WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -155,14 +155,14 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 				purt."name", 
 				cc."owner", 
 				per."name" 
-			FROM financial.purchase p
-			INNER JOIN financial.payment_type pt 
+			FROM finance.purchase p
+			INNER JOIN finance.payment_type pt 
 				on p.id_payment_type = pt.id 
-			INNER JOIN financial.purchase_type purt	
+			INNER JOIN finance.purchase_type purt	
 				on p.id_purchase_type = purt.id 
-			INNER JOIN financial.credit_card cc	
+			INNER JOIN finance.credit_card cc	
 				on p.id_credit_card = cc.id
-			INNER JOIN financial.person per	
+			INNER JOIN finance.person per	
 				on p.id_person = per.id 	
 			WHERE p.id = $1;`
 	
@@ -214,14 +214,14 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM financial.purchase p
-			INNER JOIN financial.payment_type pt 
+			FROM finance.purchase p
+			INNER JOIN finance.payment_type pt 
 				on p.id_payment_type = pt.id 
-			INNER JOIN financial.purchase_type purt	
+			INNER JOIN finance.purchase_type purt	
 				on p.id_purchase_type = purt.id 
-			INNER JOIN financial.credit_card cc	
+			INNER JOIN finance.credit_card cc	
 				on p.id_credit_card = cc.id
-			INNER JOIN financial.person per	
+			INNER JOIN finance.person per	
 				on p.id_person = per.id 
 			WHERE "date" = $1;`
 
@@ -286,14 +286,14 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM financial.purchase p
-			INNER JOIN financial.payment_type pt 
+			FROM finance.purchase p
+			INNER JOIN finance.payment_type pt 
 				on p.id_payment_type = pt.id 
-			INNER JOIN financial.purchase_type purt	
+			INNER JOIN finance.purchase_type purt	
 				on p.id_purchase_type = purt.id 
-			INNER JOIN financial.credit_card cc	
+			INNER JOIN finance.credit_card cc	
 				on p.id_credit_card = cc.id
-			INNER JOIN financial.person per	
+			INNER JOIN finance.person per	
 				on p.id_person = per.id 
 			WHERE to_char(p."date", 'YYYY-MM') = $1
 			ORDER BY p."date";`
@@ -358,14 +358,14 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM financial.purchase p
-			INNER JOIN financial.payment_type pt 
+			FROM finance.purchase p
+			INNER JOIN finance.payment_type pt 
 				ON p.id_payment_type = pt.id 
-			INNER JOIN financial.purchase_type purt	
+			INNER JOIN finance.purchase_type purt	
 				ON p.id_purchase_type = purt.id 
-			INNER JOIN financial.credit_card cc	
+			INNER JOIN finance.credit_card cc	
 				ON p.id_credit_card = cc.id
-			INNER JOIN financial.person per	
+			INNER JOIN finance.person per	
 				ON p.id_person = per.id 
 			WHERE p.id_person = $1
 			ORDER BY p."date";`
@@ -431,14 +431,14 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 				purt."name", 
 				cc."owner", 
 				per."name"
-			FROM financial.purchase p
-			INNER JOIN financial.payment_type pt 
+			FROM finance.purchase p
+			INNER JOIN finance.payment_type pt 
 				ON p.id_payment_type = pt.id 
-			INNER JOIN financial.purchase_type purt	
+			INNER JOIN finance.purchase_type purt	
 				ON p.id_purchase_type = purt.id 
-			INNER JOIN financial.credit_card cc	
+			INNER JOIN finance.credit_card cc	
 				ON p.id_credit_card = cc.id
-			INNER JOIN financial.person per	
+			INNER JOIN finance.person per	
 				ON p.id_person = per.id 
 			ORDER BY "date";`
 
