@@ -10,6 +10,9 @@ import (
 )
 
 type RepositoryPurchase interface {
+	BeginTransaction() (*sql.Tx, error)
+	Commit(tx *sql.Tx) error
+	Rollback(tx *sql.Tx) error
 	Create(p entity.Purchase) (uuid.UUID, error)
 	Update(p entity.Purchase) error
 	Delete(id uuid.UUID) error
@@ -28,7 +31,19 @@ func NewRepositoryPurchase(db *sql.DB) *repositoryPurchase {
 	return &repositoryPurchase{db}
 }
 
-func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
+func (r repositoryPurchase) BeginTransaction() (*sql.Tx, error) {
+	return r.db.Begin()
+}
+
+func (r repositoryPurchase) Commit(tx *sql.Tx) error {
+	return tx.Commit()
+}
+
+func (r repositoryPurchase) Rollback(tx *sql.Tx) error {
+	return tx.Rollback()
+}
+
+func (r repositoryPurchase) Create(tx *sql.Tx, p entity.Purchase) (uuid.UUID, error) {
 	query := `INSERT INTO purchase(
 		id,
 		description, 
@@ -41,7 +56,7 @@ func (r repositoryPurchase) Create(p entity.Purchase) (uuid.UUID, error) {
 		id_person
 	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
 
-	stmt, err := r.db.Prepare(query)
+	stmt, err := tx.Prepare(query)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("error trying prepare statment: %v", err)
 	}
@@ -77,8 +92,6 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 		SET description = $1, 
 			amount = $2, 
 			"date" = $3, 
-			installment_number = $4, 
-			installment = $5, 
 			place = $6, 
 			id_payment_type = $7, 
 			id_purchase_type = $8, 
@@ -95,8 +108,6 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 			p.Description,
 			p.Amount,
 			p.Date,
-			p.Installment.Number,
-			p.Installment.Value,
 			p.Place,
 			p.IDPaymentType,
 			p.IDPurchaseType,
@@ -148,8 +159,8 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 				p.description, 
 				p.amount, 
 				p."date", 
-				p.installment_number, 
-				p.installment, 
+				i.number as installment_number, 
+				i.value as installment,
 				p.place, 
 				pt."name",
 				purt."name", 
@@ -157,13 +168,13 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 				per."name" 
 			FROM purchase p
 			INNER JOIN payment_type pt 
-				on p.id_payment_type = pt.id 
+				ON p.id_payment_type = pt.id 
 			INNER JOIN purchase_type purt	
-				on p.id_purchase_type = purt.id 
+				ON p.id_purchase_type = purt.id 
 			INNER JOIN credit_card cc	
-				on p.id_credit_card = cc.id
+				ON p.id_credit_card = cc.id
 			INNER JOIN person per	
-				on p.id_person = per.id 	
+				ON p.id_person = per.id 	
 			WHERE p.id = $1;`
 	
 	stmt, err := r.db.Prepare(query)
@@ -171,14 +182,18 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 		return dto.PurchaseResponse{}, fmt.Errorf("error trying prepare statment: %v", err)
 	}
 
-	var pt dto.PurchaseResponse
+	var (
+		pt dto.PurchaseResponse
+		installmentNumber = sql.NullInt64{}
+		installment = sql.NullFloat64{}
+	)
 	if err = stmt.QueryRow(id).Scan(
 		&pt.ID, 
 		&pt.Description,
 		&pt.Amount,
 		&pt.Date,
-		&pt.InstallmentNumber,
-		&pt.Installment,
+		&installmentNumber,
+		&installment,
 		&pt.Place,
 		&pt.PaymentType,
 		&pt.PurchaseType,
@@ -207,8 +222,8 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 				p.description, 
 				p.amount, 
 				p."date", 
-				p.installment_number, 
-				p.installment, 
+				i.number as installment_number, 
+				i.value as installment, 
 				p.place, 
 				pt."name",
 				purt."name", 
@@ -216,13 +231,15 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 				per."name"
 			FROM purchase p
 			INNER JOIN payment_type pt 
-				on p.id_payment_type = pt.id 
+				ON p.id_payment_type = pt.id 
 			INNER JOIN purchase_type purt	
-				on p.id_purchase_type = purt.id 
+				ON p.id_purchase_type = purt.id 
 			INNER JOIN credit_card cc	
-				on p.id_credit_card = cc.id
+				ON p.id_credit_card = cc.id
 			INNER JOIN person per	
-				on p.id_person = per.id 
+				ON p.id_person = per.id 
+			LEFT JOIN installment i
+				ON p.id = i.purchase_id
 			WHERE "date" = $1;`
 
 	stmt, err := r.db.Prepare(query)
@@ -235,6 +252,9 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 		return nil, fmt.Errorf("error trying find purchase by date: %v", err)
 	}
 
+	installmentNumber := sql.NullInt64{}
+	installment := sql.NullFloat64{}
+
 	for rows.Next() {
 		var p dto.PurchaseResponse
 		if err = rows.Scan(
@@ -242,8 +262,8 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 			&p.Description,
 			&p.Amount,
 			&p.Date,
-			&p.InstallmentNumber,
-			&p.Installment,
+			&installmentNumber,
+			&installment,
 			&p.Place,
 			&p.PaymentType,
 			&p.PurchaseType,
@@ -279,8 +299,8 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 				p.description, 
 				p.amount, 
 				p."date", 
-				p.installment_number, 
-				p.installment, 
+				i.number as installment_number, 
+				i.value as installment, 
 				p.place, 
 				pt."name",
 				purt."name", 
@@ -295,6 +315,8 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 				on p.id_credit_card = cc.id
 			INNER JOIN person per	
 				on p.id_person = per.id 
+			LEFT JOIN installment i
+				ON p.id = i.purchase_id	
 			WHERE to_char(p."date", 'YYYY-MM') = $1
 			ORDER BY p."date";`
 
@@ -308,6 +330,9 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 		return nil, fmt.Errorf("error trying find purchase by date: %v", err)
 	}
 
+	installmentNumber := sql.NullInt64{}
+	installment := sql.NullFloat64{}
+
 	for rows.Next() {
 		var p dto.PurchaseResponse
 		if err = rows.Scan(
@@ -315,8 +340,8 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 			&p.Description,
 			&p.Amount,
 			&p.Date,
-			&p.InstallmentNumber,
-			&p.Installment,
+			&installmentNumber,
+			&installment,
 			&p.Place,
 			&p.PaymentType,
 			&p.PurchaseType,
@@ -351,8 +376,8 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 				p.description, 
 				p.amount, 
 				p."date", 
-				p.installment_number, 
-				p.installment, 
+				i.number as installment_number, 
+				i.value as installment, 
 				p.place, 
 				pt."name",
 				purt."name", 
@@ -366,7 +391,9 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 			INNER JOIN credit_card cc	
 				ON p.id_credit_card = cc.id
 			INNER JOIN person per	
-				ON p.id_person = per.id 
+				ON p.id_person = per.id
+			LEFT JOIN installment i
+				ON p.id = i.purchase_id	
 			WHERE p.id_person = $1
 			ORDER BY p."date";`
 
@@ -380,7 +407,11 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 		return nil, fmt.Errorf("error trying find purchase by person: %v", err)
 	}
 
-	var purchases []dto.PurchaseResponse
+	var (
+		purchases []dto.PurchaseResponse
+		installmentNumber = sql.NullInt64{}
+		installment = sql.NullFloat64{}
+	)	
 
 	for rows.Next() {
 		var p dto.PurchaseResponse
@@ -389,8 +420,8 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 			&p.Description,
 			&p.Amount,
 			&p.Date,
-			&p.InstallmentNumber,
-			&p.Installment,
+			&installmentNumber,
+			&installment,
 			&p.Place,
 			&p.PaymentType,
 			&p.PurchaseType,
@@ -424,8 +455,8 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 				p.description, 
 				p.amount, 
 				p."date", 
-				p.installment_number, 
-				p.installment, 
+				i.number as installment_number, 
+				i.value as installment, 
 				p.place, 
 				pt."name",
 				purt."name", 
@@ -439,7 +470,9 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 			INNER JOIN credit_card cc	
 				ON p.id_credit_card = cc.id
 			INNER JOIN person per	
-				ON p.id_person = per.id 
+				ON p.id_person = per.id
+			LEFT JOIN installment i
+				ON p.id = i.purchase_id
 			ORDER BY "date";`
 
 	rows, err := r.db.Query(query)
@@ -447,7 +480,11 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 		return nil, fmt.Errorf("error trying find all purchase: %v", err)
 	}
 
-	var purchases []dto.PurchaseResponse
+	var (
+		purchases []dto.PurchaseResponse
+		installmentNumber = sql.NullInt64{}
+		installment = sql.NullFloat64{}
+	)	
 
 	for rows.Next() {
 		var p dto.PurchaseResponse
@@ -456,8 +493,8 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 			&p.Description,
 			&p.Amount,
 			&p.Date,
-			&p.InstallmentNumber,
-			&p.Installment,
+			&installmentNumber,
+			&installment,
 			&p.Place,
 			&p.PaymentType,
 			&p.PurchaseType,

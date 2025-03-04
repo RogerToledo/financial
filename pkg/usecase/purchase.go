@@ -32,12 +32,14 @@ func NewPurchaseUseCase(r repository.RepositoryAll) PurchaseUseCase {
 }
 
 func (p *Purchase) CreatePurchase(purchase entity.Purchase) error {
-	var (
-		savedID uuid.UUID
-		err     error
-	)
+	tx, err := p.repositoryPurchase.All().Purchase.BeginTransaction()
+	if err != nil {
+		return fmt.Errorf("error on begin transaction: %v", err)
+	}
 
-	if savedID, err = p.repositoryPurchase.All().Purchase.Create(purchase); err != nil {
+	var	savedID uuid.UUID
+
+	if savedID, err = p.repositoryPurchase.All().Purchase.Create(tx, purchase); err != nil {
 		return err
 	}
 
@@ -45,13 +47,15 @@ func (p *Purchase) CreatePurchase(purchase entity.Purchase) error {
 
 	purchase.Installment.PurchaseID = savedID
 
-	var ir InstallmentUseCase
-
-	ir = NewInstallmentUseCase(p.repositoryPurchase)
+	ir := NewInstallmentUseCase(p.repositoryPurchase)
 
 	if err := ir.CreateInstallment(purchase); err != nil {
+		p.repositoryPurchase.All().Purchase.Rollback(tx)
+
 		return err
 	}
+
+	p.repositoryPurchase.All().Purchase.Commit(tx)
 
 	return nil
 }
