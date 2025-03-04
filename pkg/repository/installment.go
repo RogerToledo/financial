@@ -31,8 +31,10 @@ func (r *repositoryInstallment) Create(installment entity.Installment) error {
 	
 	stmt, err := r.db.Prepare(sql)
 	if err != nil {
-		return fmt.Errorf("Error preparing statement: %v", err)
+		return fmt.Errorf("error preparing statement: %v", err)
 	}
+
+	fmt.Println("purchase_id: ", installment.PurchaseID.String())
 
 	installment.ID = uuid.New()
 	
@@ -46,7 +48,7 @@ func (r *repositoryInstallment) Create(installment entity.Installment) error {
 		installment.PurchaseID,
 	)
 	if err != nil {
-		return fmt.Errorf("Error executing statement: %v", err)
+		return fmt.Errorf("error executing statement: %v", err)
 	}
 			
 	return nil

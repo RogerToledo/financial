@@ -11,7 +11,6 @@ import (
 type Purchase struct {
 	ID                uuid.UUID `json:"id"`	
 	Description       string  `json:"description"`
-	Type 	          string  `json:"type"`
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
 	Installment       Installment `json:"installment_number"`

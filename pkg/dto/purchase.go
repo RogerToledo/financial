@@ -8,9 +8,7 @@ import (
 )
 
 type PurchaseRequest struct {
-	ID                uuid.UUID `json:"id"`	
 	Description       string  `json:"description"`
-	Type 	          string  `json:"type"`
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
 	InstallmentNumber int     `json:"installment_number"`
@@ -54,9 +52,7 @@ func (p *PurchaseRequest) ToEntity() (entity.Purchase, error) {
 	installment.Value  = p.Installment
 
 	purchase := entity.Purchase{
-		ID:                p.ID,
 		Description:       p.Description,
-		Type: 	           p.Type,
 		Amount:            p.Amount,
 		Date:              convertedDate,
 		Installment:       installment,
