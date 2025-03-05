@@ -4,8 +4,8 @@ CREATE TABLE credit_card (
 	id uuid NOT NULL,
 	"owner" varchar(50) NOT NULL,
 	invoice_closing_day int4 NOT NULL,
-	created_at date DEFAULT now() NOT NULL,
-	update_at date NULL,
+	created_at timestamp DEFAULT now() NOT NULL,
+	update_at timestamp NULL,
 	CONSTRAINT credit_card_pk PRIMARY KEY (id),
 	CONSTRAINT credit_card_unique UNIQUE (owner)
 );
@@ -13,8 +13,8 @@ CREATE TABLE credit_card (
 CREATE TABLE payment_type (
 	id uuid NOT NULL,
 	"name" varchar(50) NOT NULL,
-	create_at date DEFAULT now() NOT NULL,
-	update_at date NULL,
+	create_at timestamp DEFAULT now() NOT NULL,
+	update_at timestamp NULL,
 	CONSTRAINT payment_type_pk PRIMARY KEY (id),
 	CONSTRAINT payment_type_unique UNIQUE (name)
 );
@@ -22,8 +22,8 @@ CREATE TABLE payment_type (
 CREATE TABLE person (
 	id uuid NOT NULL,
 	"name" varchar(50) NOT NULL,
-	create_at date DEFAULT now() NOT NULL,
-	update_at date NULL,
+	create_at timestamp DEFAULT now() NOT NULL,
+	update_at timestamp NULL,
 	CONSTRAINT person_pk PRIMARY KEY (id),
 	CONSTRAINT person_unique UNIQUE (name)
 );
@@ -31,8 +31,8 @@ CREATE TABLE person (
 CREATE TABLE purchase_type (
 	id uuid NOT NULL,
 	"name" varchar(50) NOT NULL,
-	create_at date DEFAULT now() NOT NULL,
-	update_at date NULL,
+	create_at timestamp DEFAULT now() NOT NULL,
+	update_at timestamp NULL,
 	CONSTRAINT purchase_type_pk PRIMARY KEY (id),
 	CONSTRAINT purchase_type_unique UNIQUE (name)
 );
@@ -48,8 +48,8 @@ CREATE TABLE purchase (
 	id_purchase_type uuid NOT NULL,
 	id_credit_card uuid NOT NULL,
 	id_person uuid NOT NULL,
-	create_at date DEFAULT now() NOT NULL,
-	update_at date NULL,
+	create_at timestamp DEFAULT now() NOT NULL,
+	update_at timestamp NULL,
 	CONSTRAINT purchase_pk PRIMARY KEY (id)
 );
 
@@ -60,7 +60,7 @@ ALTER TABLE purchase ADD CONSTRAINT purchase_payment_type_fk FOREIGN KEY (id_pay
 ALTER TABLE purchase ADD CONSTRAINT purchase_person_fk FOREIGN KEY (id_person) REFERENCES person(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE purchase ADD CONSTRAINT purchase_purchase_type_fk FOREIGN KEY (id_purchase_type) REFERENCES purchase_type(id) ON DELETE CASCADE ON UPDATE CASCADE;
 -----------------------------------------------------------------
-CREATE TABLE installment (
+CREATE TABLE public.installment (
 	id uuid NOT NULL,
 	description varchar(50) NOT NULL,
 	"month" date NOT NULL,
@@ -68,9 +68,11 @@ CREATE TABLE installment (
 	"number" int4 NOT NULL,
 	paid bool NULL,
 	purchase_id uuid NOT NULL,
+	created_at timestamp DEFAULT now() not null,
+	update_at timestamp NULL,
 	CONSTRAINT installment_pk PRIMARY KEY (id)
 );
 -- installment foreign keys
 
-ALTER TABLE installment ADD CONSTRAINT installment_purchase_fk FOREIGN KEY (id) REFERENCES purchase(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE installment ADD CONSTRAINT installment_purchase_fk FOREIGN KEY (purchase_id) REFERENCES purchase(id) ON DELETE CASCADE ON UPDATE CASCADE;
 -----------------------------------------------------------------
