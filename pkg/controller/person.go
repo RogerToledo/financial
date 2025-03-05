@@ -7,16 +7,15 @@ import (
 	"net/http"
 
 	"github.com/me/finance/pkg/entity"
-	"github.com/me/finance/pkg/repository"
 	"github.com/me/finance/pkg/usecase"
 )
 
 type ControllerPerson interface {
-	CreatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindPersonByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindAllPersons(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
+	CreatePerson(w http.ResponseWriter, r *http.Request)
+	UpdatePerson(w http.ResponseWriter, r *http.Request)
+	DeletePerson(w http.ResponseWriter, r *http.Request)
+	FindPersonByID(w http.ResponseWriter, r *http.Request)
+	FindAllPersons(w http.ResponseWriter, r *http.Request)
 }
 
 type controllerPerson struct{
@@ -27,7 +26,7 @@ func NewPersonController(useCase usecase.PersonUseCase) ControllerPerson {
 	return &controllerPerson{useCase}
 }
 
-func (p *controllerPerson) CreatePerson(rep *repository.Repository , w http.ResponseWriter, r *http.Request) {
+func (p *controllerPerson) CreatePerson(w http.ResponseWriter, r *http.Request) {
 	var person entity.Person
 
 	err := json.NewDecoder(r.Body).Decode(&person)
@@ -52,7 +51,7 @@ func (p *controllerPerson) CreatePerson(rep *repository.Repository , w http.Resp
 	HTTPResponse(w, fmt.Sprint("Person was created with success!"), http.StatusCreated)
 }
 
-func (p *controllerPerson) UpdatePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *controllerPerson) UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	var person entity.Person
 
 	err := json.NewDecoder(r.Body).Decode(&person)
@@ -77,7 +76,7 @@ func (p *controllerPerson) UpdatePerson(rep *repository.Repository, w http.Respo
 	HTTPResponse(w, fmt.Sprintf("Person was updated with success!"), http.StatusOK)
 }
 
-func (p *controllerPerson) DeletePerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *controllerPerson) DeletePerson(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 
 	id, err := entity.ValidateID(idRequest)
@@ -96,7 +95,7 @@ func (p *controllerPerson) DeletePerson(rep *repository.Repository, w http.Respo
 	HTTPResponse(w, fmt.Sprint("Person was deleted with success!"), http.StatusOK)
 }
 
-func (p *controllerPerson) FindPersonByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *controllerPerson) FindPersonByID(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -116,7 +115,7 @@ func (p *controllerPerson) FindPersonByID(rep *repository.Repository, w http.Res
 	HTTPResponse(w, person, http.StatusOK)
 }
 
-func (p *controllerPerson) FindAllPersons(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *controllerPerson) FindAllPersons(w http.ResponseWriter, r *http.Request) {
 	persons, err := p.useCase.FindAllPersons()
 	if err != nil {
 		slog.Error(err.Error())

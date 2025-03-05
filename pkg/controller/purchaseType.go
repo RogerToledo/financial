@@ -7,16 +7,15 @@ import (
 	"net/http"
 
 	"github.com/me/finance/pkg/entity"
-	"github.com/me/finance/pkg/repository"
 	"github.com/me/finance/pkg/usecase"
 )
 
 type ControllerPurchaseType interface {
-	CreatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindAllPurchaseTypes(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
+	CreatePurchaseType(w http.ResponseWriter, r *http.Request)
+	UpdatePurchaseType(w http.ResponseWriter, r *http.Request)
+	DeletePurchaseType(w http.ResponseWriter, r *http.Request)
+	FindPurchaseTypeByID(w http.ResponseWriter, r *http.Request)
+	FindAllPurchaseTypes(w http.ResponseWriter, r *http.Request)
 }
 
 type controllerPurchaseType struct{
@@ -27,7 +26,7 @@ func NewPurchaseTypeController(useCase usecase.PurchaseTypeUseCase) ControllerPu
 	return &controllerPurchaseType{useCase}
 }
 
-func (pt *controllerPurchaseType) CreatePurchaseType(rep *repository.Repository , w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPurchaseType) CreatePurchaseType(w http.ResponseWriter, r *http.Request) {
 	var purchaseType entity.PurchaseType
 
 	err := json.NewDecoder(r.Body).Decode(&purchaseType)
@@ -52,7 +51,7 @@ func (pt *controllerPurchaseType) CreatePurchaseType(rep *repository.Repository 
 	HTTPResponse(w, fmt.Sprintf("Purchase Type was created with success!"), http.StatusCreated)
 }
 
-func (pt *controllerPurchaseType) UpdatePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPurchaseType) UpdatePurchaseType(w http.ResponseWriter, r *http.Request) {
 	var purchaseType entity.PurchaseType
 
 	err := json.NewDecoder(r.Body).Decode(&purchaseType)
@@ -77,7 +76,7 @@ func (pt *controllerPurchaseType) UpdatePurchaseType(rep *repository.Repository,
 	HTTPResponse(w, fmt.Sprint("Purchase Type was updated with success"), http.StatusOK)
 }
 
-func (pt *controllerPurchaseType) DeletePurchaseType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPurchaseType) DeletePurchaseType(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -97,7 +96,7 @@ func (pt *controllerPurchaseType) DeletePurchaseType(rep *repository.Repository,
 	HTTPResponse(w, fmt.Sprint("Purchase Type was deleted with success!"), http.StatusOK)
 }
 
-func (pt *controllerPurchaseType) FindPurchaseTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPurchaseType) FindPurchaseTypeByID(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -117,7 +116,7 @@ func (pt *controllerPurchaseType) FindPurchaseTypeByID(rep *repository.Repositor
 	HTTPResponse(w, purchaseType, http.StatusOK)
 }
 
-func (pt *controllerPurchaseType) FindAllPurchaseTypes(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPurchaseType) FindAllPurchaseTypes(w http.ResponseWriter, r *http.Request) {
 	purchaseTypes, err := pt.usecase.FindAllPurchaseTypes()
 	if err != nil {
 		slog.Error(err.Error())

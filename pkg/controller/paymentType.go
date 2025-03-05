@@ -7,16 +7,15 @@ import (
 	"net/http"
 
 	"github.com/me/finance/pkg/entity"
-	"github.com/me/finance/pkg/repository"
 	"github.com/me/finance/pkg/usecase"
 )
 
 type ControllerPaymentType interface {
-	CreatePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	UpdatePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	DeletePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindPaymentTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindAllPaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
+	CreatePaymentType(w http.ResponseWriter, r *http.Request)
+	UpdatePaymentType(w http.ResponseWriter, r *http.Request)
+	DeletePaymentType(w http.ResponseWriter, r *http.Request)
+	FindPaymentTypeByID(w http.ResponseWriter, r *http.Request)
+	FindAllPaymentType(w http.ResponseWriter, r *http.Request)
 }
 
 type controllerPaymentType struct {
@@ -27,7 +26,7 @@ func NewPaymentTypeController(useCase usecase.PaymentTypeUseCase) ControllerPaym
 	return &controllerPaymentType{useCase}
 }
 
-func (pt *controllerPaymentType) CreatePaymentType(rep *repository.Repository , w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPaymentType) CreatePaymentType(w http.ResponseWriter, r *http.Request) {
 	var paymentType entity.PaymentType
 
 	err := json.NewDecoder(r.Body).Decode(&paymentType)
@@ -52,7 +51,7 @@ func (pt *controllerPaymentType) CreatePaymentType(rep *repository.Repository , 
 	HTTPResponse(w, fmt.Sprintf("Payment Type was created with success!"), http.StatusCreated)
 }
 
-func (pt *controllerPaymentType) UpdatePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPaymentType) UpdatePaymentType(w http.ResponseWriter, r *http.Request) {
 	var paymentType entity.PaymentType
 
 	err := json.NewDecoder(r.Body).Decode(&paymentType)
@@ -77,7 +76,7 @@ func (pt *controllerPaymentType) UpdatePaymentType(rep *repository.Repository, w
 	HTTPResponse(w, fmt.Sprint("Payment Type was updated with success!"), http.StatusOK)
 }
 
-func (pt *controllerPaymentType) DeletePaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPaymentType) DeletePaymentType(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -97,7 +96,7 @@ func (pt *controllerPaymentType) DeletePaymentType(rep *repository.Repository, w
 	HTTPResponse(w, fmt.Sprintf("Payment Type was deleted with success!"), http.StatusOK)
 }
 
-func (pt *controllerPaymentType) FindPaymentTypeByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPaymentType) FindPaymentTypeByID(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 
 	id, err := entity.ValidateID(idRequest)
@@ -117,7 +116,7 @@ func (pt *controllerPaymentType) FindPaymentTypeByID(rep *repository.Repository,
 	HTTPResponse(w, paymentType, http.StatusOK)
 }
 
-func (pt *controllerPaymentType) FindAllPaymentType(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (pt *controllerPaymentType) FindAllPaymentType(w http.ResponseWriter, r *http.Request) {
 	paymentTypes, err := pt.usecase.FindAllPaymentTypes()
 	if err != nil {
 		slog.Error(err.Error())

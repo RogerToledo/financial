@@ -8,19 +8,18 @@ import (
 
 	"github.com/me/finance/pkg/dto"
 	"github.com/me/finance/pkg/entity"
-	"github.com/me/finance/pkg/repository"
 	"github.com/me/finance/pkg/usecase"
 )
 
 type ControllerPurchase interface {
-	Create(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	Update(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	Delete(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindByDate(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindByMonth(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindByPerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindAll(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
+	Create(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
+	FindByID(w http.ResponseWriter, r *http.Request)
+	FindByDate(w http.ResponseWriter, r *http.Request)
+	FindByMonth(w http.ResponseWriter, r *http.Request)
+	FindByPerson(w http.ResponseWriter, r *http.Request)
+	FindAll(w http.ResponseWriter, r *http.Request)
 }
 
 type purchaseController struct {
@@ -31,7 +30,7 @@ func NewPurchaseController(useCase usecase.PurchaseUseCase) ControllerPurchase {
 	return &purchaseController{useCase}
 }
 
-func (p *purchaseController) Create(rep *repository.Repository , w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) Create(w http.ResponseWriter, r *http.Request) {
 	var (
 		purchase entity.Purchase
 		purchaseRequest dto.PurchaseRequest
@@ -66,7 +65,7 @@ func (p *purchaseController) Create(rep *repository.Repository , w http.Response
 	HTTPResponse(w, fmt.Sprint("Purchase was created with success!"), http.StatusCreated)
 }
 
-func (p *purchaseController) Update(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) Update(w http.ResponseWriter, r *http.Request) {
 	var (
 		purchase entity.Purchase
 		purchaseRequest dto.PurchaseRequest
@@ -100,7 +99,7 @@ func (p *purchaseController) Update(rep *repository.Repository, w http.ResponseW
 	HTTPResponse(w, fmt.Sprintf("Purchase was updated with success!"), http.StatusOK)
 }
 
-func (p *purchaseController) Delete(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) Delete(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -120,7 +119,7 @@ func (p *purchaseController) Delete(rep *repository.Repository, w http.ResponseW
 	HTTPResponse(w, fmt.Sprintf("Purchase was deleted with success!"), http.StatusOK)
 }
 
-func (p *purchaseController) FindByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) FindByID(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -140,7 +139,7 @@ func (p *purchaseController) FindByID(rep *repository.Repository, w http.Respons
 	HTTPResponse(w, purchase, http.StatusOK)
 }
 
-func (p *purchaseController) FindByDate(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) FindByDate(w http.ResponseWriter, r *http.Request) {
 	date := r.PathValue("date")
 
 	if err := entity.ValidateDate(date); err != nil {
@@ -159,7 +158,7 @@ func (p *purchaseController) FindByDate(rep *repository.Repository, w http.Respo
 	HTTPResponse(w, purchases, http.StatusOK)
 }
 
-func (p *purchaseController) FindByMonth(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) FindByMonth(w http.ResponseWriter, r *http.Request) {
 	date := r.PathValue("date")
 
 	if err := entity.ValidateYearMonth(date); err != nil {
@@ -178,7 +177,7 @@ func (p *purchaseController) FindByMonth(rep *repository.Repository, w http.Resp
 	HTTPResponse(w, purchases, http.StatusOK)
 }
 
-func (p *purchaseController) FindByPerson(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) FindByPerson(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -198,7 +197,7 @@ func (p *purchaseController) FindByPerson(rep *repository.Repository, w http.Res
 	HTTPResponse(w, purchases, http.StatusOK)
 }
 
-func (p *purchaseController) FindAll(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (p *purchaseController) FindAll(w http.ResponseWriter, r *http.Request) {
 	purchases, err := p.useCase.FindAllPurchases()
 	if err != nil {
 		slog.Error(err.Error())

@@ -7,16 +7,15 @@ import (
 	"net/http"
 
 	"github.com/me/finance/pkg/entity"
-	"github.com/me/finance/pkg/repository"
 	"github.com/me/finance/pkg/usecase"
 )
 
 type ControllerCreditCard interface {
-	CreateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	UpdateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindCreditCardByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
-	FindAllCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request)
+	CreateCreditCard(w http.ResponseWriter, r *http.Request)
+	UpdateCreditCard(w http.ResponseWriter, r *http.Request)
+	DeleteCreditCard(w http.ResponseWriter, r *http.Request)
+	FindCreditCardByID(w http.ResponseWriter, r *http.Request)
+	FindAllCreditCard(w http.ResponseWriter, r *http.Request)
 }
 
 type controllerCreditCard struct{
@@ -27,7 +26,7 @@ func NewCreditCardController(useCase usecase.CreditCardUseCase) ControllerCredit
 	return &controllerCreditCard{useCase}
 }
 
-func (c *controllerCreditCard) CreateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (c *controllerCreditCard) CreateCreditCard(w http.ResponseWriter, r *http.Request) {
 	var creditCard entity.CreditCard
 
 	if err := json.NewDecoder(r.Body).Decode(&creditCard); err != nil {
@@ -51,7 +50,7 @@ func (c *controllerCreditCard) CreateCreditCard(rep *repository.Repository, w ht
 	HTTPResponse(w, fmt.Sprintf("Credit card created to %s", creditCard.Owner), http.StatusOK)
 }
 
-func (c *controllerCreditCard) UpdateCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (c *controllerCreditCard) UpdateCreditCard(w http.ResponseWriter, r *http.Request) {
 	var creditCard entity.CreditCard
 
 	if err := json.NewDecoder(r.Body).Decode(&creditCard); err != nil {
@@ -75,7 +74,7 @@ func (c *controllerCreditCard) UpdateCreditCard(rep *repository.Repository, w ht
 	HTTPResponse(w, fmt.Sprint("Credit card was updated with success!"), http.StatusOK)
 }
 
-func (c *controllerCreditCard) DeleteCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (c *controllerCreditCard) DeleteCreditCard(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 	
 	id, err := entity.ValidateID(idRequest)
@@ -94,7 +93,7 @@ func (c *controllerCreditCard) DeleteCreditCard(rep *repository.Repository, w ht
 	HTTPResponse(w, fmt.Sprint("Credit card deleted with sucess!"), http.StatusOK)
 }
 
-func (c *controllerCreditCard) FindCreditCardByID(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (c *controllerCreditCard) FindCreditCardByID(w http.ResponseWriter, r *http.Request) {
 	idRequest := r.PathValue("id")
 
 	id, err := entity.ValidateID(idRequest)
@@ -114,7 +113,7 @@ func (c *controllerCreditCard) FindCreditCardByID(rep *repository.Repository, w 
 	HTTPResponse(w, creditCard, http.StatusOK)
 }	
 
-func (c *controllerCreditCard) FindAllCreditCard(rep *repository.Repository, w http.ResponseWriter, r *http.Request) {
+func (c *controllerCreditCard) FindAllCreditCard(w http.ResponseWriter, r *http.Request) {
 	creditCard, err := c.useCase.FindAllCreditCards()
 	if err != nil {
 		slog.Error(err.Error())
