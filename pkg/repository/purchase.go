@@ -14,7 +14,7 @@ type RepositoryPurchase interface {
 	Commit(tx *sql.Tx) error
 	Rollback(tx *sql.Tx) error
 	Create(p entity.Purchase) (uuid.UUID, error)
-	Update(p entity.Purchase) error
+	Update(tx *sql.Tx, p entity.Purchase) error
 	Delete(id uuid.UUID) error
 	FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 	FindByDate(date string) ([]dto.PurchaseResponse, error)
@@ -49,12 +49,13 @@ func (r repositoryPurchase) Create(tx *sql.Tx, p entity.Purchase) (uuid.UUID, er
 		description, 
 		amount, 
 		"date", 
-		place, 
+		place,
+		paid, 
 		id_payment_type, 
 		id_purchase_type, 
 		id_credit_card, 
 		id_person
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);`
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
@@ -72,6 +73,7 @@ func (r repositoryPurchase) Create(tx *sql.Tx, p entity.Purchase) (uuid.UUID, er
 		p.Amount,
 		p.Date,
 		p.Place,
+		p.Paid,
 		p.IDPaymentType,
 		p.IDPurchaseType,
 		p.IDCreditCard,
@@ -87,19 +89,20 @@ func (r repositoryPurchase) Create(tx *sql.Tx, p entity.Purchase) (uuid.UUID, er
 	return id, nil
 }
 
-func (r repositoryPurchase) Update(p entity.Purchase) error {
+func (r repositoryPurchase) Update(tx *sql.Tx, p entity.Purchase) error {
 	query := `UPDATE purchase
 		SET description = $1, 
 			amount = $2, 
 			"date" = $3, 
-			place = $6, 
-			id_payment_type = $7, 
-			id_purchase_type = $8, 
-			id_credit_card = $9, 
-			id_person = $10
-		WHERE id=$11;`
+			place = $4, 
+			paid = $5,
+			id_payment_type = $6, 
+			id_purchase_type = $7, 
+			id_credit_card = $8, 
+			id_person = $9
+		WHERE id = $10;`
 
-	stmt, err := r.db.Prepare(query)
+	stmt, err := tx.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error trying prepare statment: %v", err)
 	}
@@ -109,6 +112,7 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 			p.Amount,
 			p.Date,
 			p.Place,
+			p.Paid,
 			p.IDPaymentType,
 			p.IDPurchaseType,
 			p.IDCreditCard,
@@ -129,7 +133,7 @@ func (r repositoryPurchase) Update(p entity.Purchase) error {
 	return nil
 }
 
-func (r repositoryPurchase) Delete(id uuid.UUID) error {
+func (r repositoryPurchase) Delete(tx *sql.Tx, id uuid.UUID) error {
 	query := `DELETE FROM purchase WHERE id = $1`
 
 	stmt, err := r.db.Prepare(query)
@@ -161,7 +165,8 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 				p."date", 
 				i.number as installment_number, 
 				i.value as installment,
-				p.place, 
+				p.place,
+				p.paid,
 				pt."name",
 				purt."name", 
 				cc."owner", 
@@ -174,7 +179,9 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 			INNER JOIN credit_card cc	
 				ON p.id_credit_card = cc.id
 			INNER JOIN person per	
-				ON p.id_person = per.id 	
+				ON p.id_person = per.id
+			LEFT JOIN installment i
+				ON p.id = i.purchase_id		
 			WHERE p.id = $1;`
 	
 	stmt, err := r.db.Prepare(query)
@@ -195,6 +202,7 @@ func (r repositoryPurchase) FindByID(id uuid.UUID) (dto.PurchaseResponse, error)
 		&installmentNumber,
 		&installment,
 		&pt.Place,
+		&pt.Paid,
 		&pt.PaymentType,
 		&pt.PurchaseType,
 		&pt.CreditCard,
@@ -224,7 +232,8 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 				p."date", 
 				i.number as installment_number, 
 				i.value as installment, 
-				p.place, 
+				p.place,
+				p.paid, 
 				pt."name",
 				purt."name", 
 				cc."owner", 
@@ -265,6 +274,7 @@ func (r repositoryPurchase) FindByDate(date string) ([]dto.PurchaseResponse, err
 			&installmentNumber,
 			&installment,
 			&p.Place,
+			&p.Paid,
 			&p.PaymentType,
 			&p.PurchaseType,
 			&p.CreditCard,
@@ -302,6 +312,7 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 				i.number as installment_number, 
 				i.value as installment, 
 				p.place, 
+				p.paid,
 				pt."name",
 				purt."name", 
 				cc."owner", 
@@ -343,6 +354,7 @@ func (r repositoryPurchase) FindByMonth(date string) ([]dto.PurchaseResponse, er
 			&installmentNumber,
 			&installment,
 			&p.Place,
+			&p.Paid,
 			&p.PaymentType,
 			&p.PurchaseType,
 			&p.CreditCard,
@@ -379,6 +391,7 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 				i.number as installment_number, 
 				i.value as installment, 
 				p.place, 
+				p.paid,
 				pt."name",
 				purt."name", 
 				cc."owner", 
@@ -423,6 +436,7 @@ func (r repositoryPurchase) FindByPerson(id uuid.UUID) ([]dto.PurchaseResponse, 
 			&installmentNumber,
 			&installment,
 			&p.Place,
+			&p.Paid,
 			&p.PaymentType,
 			&p.PurchaseType,
 			&p.CreditCard,
@@ -458,6 +472,7 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 				i.number as installment_number, 
 				i.value as installment, 
 				p.place, 
+				p.paid,
 				pt."name",
 				purt."name", 
 				cc."owner", 
@@ -496,6 +511,7 @@ func (r repositoryPurchase) FindAll() ([]dto.PurchaseResponse, error) {
 			&installmentNumber,
 			&installment,
 			&p.Place,
+			&p.Paid,
 			&p.PaymentType,
 			&p.PurchaseType,
 			&p.CreditCard,

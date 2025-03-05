@@ -26,6 +26,7 @@ func InitializeRoutes() {
 	PaymentTypeRoutes(mux, rep)
 	PurchaseTypeRoutes(mux, rep)
 	PurchaseRoutes(mux, rep)
+	InstallmentRoutes(mux, rep)
 
 	slog.Info("Server running on port " + config.ServerPort())
 	http.ListenAndServe(fmt.Sprintf(":%s", config.ServerPort()), mux)

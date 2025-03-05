@@ -8,12 +8,14 @@ import (
 )
 
 type PurchaseRequest struct {
+	ID 			      uuid.UUID `json:"id"`
 	Description       string  `json:"description"`
 	Amount            float64 `json:"amount"`
 	Date              string  `json:"date"` 
 	InstallmentNumber int     `json:"installment_number"`
 	Installment       float64 `json:"installment"`
-	Place	          string    `json:"place"`
+	Place	          string  `json:"place"`
+	Paid			  bool    `json:"paid"`
 	IDPaymentType     uuid.UUID `json:"id_payment_type"`
 	IDCreditCard	  uuid.UUID `json:"id_credit_card"`
 	IDPurchaseType    uuid.UUID `json:"id_purchase_type"`
@@ -28,6 +30,7 @@ type PurchaseResponse struct {
 	InstallmentNumber int     `json:"installment_number"`
 	Installment       float64 `json:"installment"`
 	Place	          string  `json:"place"`
+	Paid			  bool    `json:"paid"`
 	PaymentType       string  `json:"payment_type"`
 	CreditCard	      string  `json:"credit_card"`
 	PurchaseType      string  `json:"purchase_type"`
@@ -43,7 +46,7 @@ type PurchaseResponseTotal struct {
 func (p *PurchaseRequest) ToEntity() (entity.Purchase, error) {
 	convertedDate, err := entity.ConverDateDB(p.Date)
 	if err != nil {
-		return entity.Purchase{}, fmt.Errorf("Error converting date: %v", err)
+		return entity.Purchase{}, fmt.Errorf("error converting date: %v", err)
 	}
 
 	var installment entity.Installment
@@ -52,15 +55,17 @@ func (p *PurchaseRequest) ToEntity() (entity.Purchase, error) {
 	installment.Value  = p.Installment
 
 	purchase := entity.Purchase{
-		Description:       p.Description,
-		Amount:            p.Amount,
-		Date:              convertedDate,
-		Installment:       installment,
-		Place:	           p.Place,
-		IDPaymentType:     p.IDPaymentType,
-		IDCreditCard:	   p.IDCreditCard,
-		IDPurchaseType:    p.IDPurchaseType,
-		IDPerson:	       p.IDPerson,
+		ID:             p.ID,
+		Description:    p.Description,
+		Amount:         p.Amount,
+		Date:           convertedDate,
+		Installment:    installment,
+		Place:	        p.Place,
+		Paid:	        p.Paid,
+		IDPaymentType:  p.IDPaymentType,
+		IDCreditCard:	p.IDCreditCard,
+		IDPurchaseType: p.IDPurchaseType,
+		IDPerson:	    p.IDPerson,
 	}
 
 	return purchase, nil

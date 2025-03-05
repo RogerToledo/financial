@@ -13,6 +13,7 @@ type Controller struct {
 	PaymentType  ControllerPaymentType
 	PurchaseType ControllerPurchaseType
 	Purchase     ControllerPurchase
+	Installment  ControllerInstallment
 }
 
 var (
@@ -28,13 +29,14 @@ func NewController(r *repository.Repository) *Controller {
 			pt := usecase.NewPaymentTypeUseCase(r.PaymentType)
 			purt := usecase.NewPurchaseTypeUseCase(r.PurchaseType)
 			pur := usecase.NewPurchaseUseCase(r.All)
-			usecase.NewInstallmentUseCase(r.All)
+			i := usecase.NewInstallmentUseCase(r.All)
 
 			person := NewPersonController(p)
 			creditCard := NewCreditCardController(cc)
 			paymentType := NewPaymentTypeController(pt)
 			purchaseType := NewPurchaseTypeController(purt)
 			purchase := NewPurchaseController(pur)
+			installment := NewInstallmentController(i)
 
 			instance = &Controller{
 				Person:       person,
@@ -42,6 +44,7 @@ func NewController(r *repository.Repository) *Controller {
 				PaymentType:  paymentType,
 				PurchaseType: purchaseType,
 				Purchase:     purchase,
+				Installment:  installment,
 			}
 		})
 	}	

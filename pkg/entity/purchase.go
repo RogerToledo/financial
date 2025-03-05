@@ -3,23 +3,22 @@ package entity
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 type Purchase struct {
-	ID                uuid.UUID `json:"id"`	
-	Description       string  `json:"description"`
-	Amount            float64 `json:"amount"`
-	Date              string  `json:"date"` 
-	Installment       Installment `json:"installment_number"`
-	Paid			  bool    `json:"paid"`
-	Place	          string  `json:"place"`
-	IDPaymentType     uuid.UUID `json:"id_payment_type"`
-	IDCreditCard	  uuid.UUID `json:"id_credit_card"`
-	IDPurchaseType    uuid.UUID `json:"id_purchase_type"`
-	IDPerson	      uuid.UUID `json:"id_person"`
+	ID             uuid.UUID `json:"id"`	
+	Description    string  `json:"description"`
+	Amount         float64 `json:"amount"`
+	Date           string  `json:"date"` 
+	Installment    Installment `json:"installment_number"`
+	Place	       string  `json:"place"`
+	Paid		   bool    `json:"paid"`
+	IDPaymentType  uuid.UUID `json:"id_payment_type"`
+	IDCreditCard   uuid.UUID `json:"id_credit_card"`
+	IDPurchaseType uuid.UUID `json:"id_purchase_type"`
+	IDPerson	   uuid.UUID `json:"id_person"`
 }
 
 func (p *Purchase) Validate() error {
@@ -61,21 +60,6 @@ func (p *Purchase) Validate() error {
 		} else {
 			return fmt.Errorf("The fields %s are required", fields)
 		}
-	}
-
-	return nil
-}
-func ValidateDate(date string) error {
-	if _, err := time.Parse("2006-01-02", date); err != nil {
-		return fmt.Errorf("The date is invalid")
-	}
-
-	return nil
-}
-
-func ValidateYearMonth(date string) error {
-	if _, err := time.Parse("01/2006", date); err != nil {
-		return fmt.Errorf("The date is invalid")
 	}
 
 	return nil

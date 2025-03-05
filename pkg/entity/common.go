@@ -37,3 +37,19 @@ func ConverDate(date string) (string, error) {
 
 	return dateFormated, nil
 }
+
+func ValidateDate(date string) error {
+	if _, err := time.Parse("2006-01-02", date); err != nil {
+		return fmt.Errorf("The date is invalid")
+	}
+
+	return nil
+}
+
+func ValidateYearMonth(date string) error {
+	if _, err := time.Parse("2006-01", date); err != nil {
+		return fmt.Errorf("The date is invalid")
+	}
+
+	return nil
+}

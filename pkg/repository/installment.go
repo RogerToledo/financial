@@ -12,8 +12,9 @@ type RepositoryInstallment interface {
 	Create(installment entity.Installment) error
 	Update(installment entity.Installment) error
 	Delete(id uuid.UUID) error
-	FindByID(id uuid.UUID) (entity.Installment, error)
-	FindAll() ([]entity.Installment, error)
+	FindByPurchaseID(id uuid.UUID) ([]entity.Installment, error)
+	FindByMonth(month string) ([]entity.Installment, error)
+	FindByNotPaid() ([]entity.Installment, error)
 }
 
 type repositoryInstallment struct {
@@ -54,20 +55,148 @@ func (r *repositoryInstallment) Create(installment entity.Installment) error {
 	return nil
 }
 
-func (r *repositoryInstallment) Update(entity.Installment) error {
+func (r *repositoryInstallment) Update(id uuid.UUID) error {
+	sql := `UPDATE installment SET paid = true WHERE id = $1`
+
+	stmt, err := r.db.Prepare(sql)
+	if err != nil {
+		return fmt.Errorf("error preparing statement: %v", err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("error executing statement: %v", err)
+	}
+
 	return nil
 }
 
 func (r *repositoryInstallment) Delete(id uuid.UUID) error {
+	sql := `DELETE FROM installment WHERE purchase_id = $1`
+
+	stmt, err := r.db.Prepare(sql)
+	if err != nil {
+		return fmt.Errorf("error preparing statement: %v", err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("error executing statement: %v", err)
+	}
+	
 	return nil
 }
 
-func (r *repositoryInstallment) FindByID(id uuid.UUID) (entity.Installment, error) {
-	return entity.Installment{}, nil
+func (r *repositoryInstallment) FindByPurchaseID(id uuid.UUID) ([]entity.Installment, error) {
+	sql := `SELECT id, description, number, value, month, paid, purchase_id
+			 FROM installment 
+			 WHERE purchase_id = $1`
+
+	stmt, err := r.db.Prepare(sql)
+	if err != nil {
+		return nil, fmt.Errorf("error preparing statement: %v", err)
+	}
+
+	rows, err := stmt.Query(id)
+	if err != nil {
+		return nil, fmt.Errorf("error executing statement: %v", err)
+	}
+
+	var installments []entity.Installment
+	for rows.Next() {
+		var installment entity.Installment
+		err = rows.Scan(
+			&installment.ID,
+			&installment.Description,
+			&installment.Number,
+			&installment.Value,
+			&installment.Month,
+			&installment.Paid,
+			&installment.PurchaseID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning rows: %v", err)
+		}
+
+		installments = append(installments, installment)
+	}
+		
+
+	return installments, nil
 }
 
-func (r *repositoryInstallment) FindAll(entity.Installment) (entity.Installment, error) {
-	return entity.Installment{}, nil
+func (r *repositoryInstallment) FindByMonth(month string) ([]entity.Installment, error) {
+	sql := `SELECT id, description, number, value, month, paid, purchase_id
+			 FROM installment 
+			 WHERE to_char(month, 'YYYY-MM') = $1`
+
+	stmt, err := r.db.Prepare(sql)
+	if err != nil {
+		return nil, fmt.Errorf("error preparing statement: %v", err)
+	}
+
+	rows, err := stmt.Query(month)
+	if err != nil {
+		return nil, fmt.Errorf("error executing statement: %v", err)
+	}
+
+	var installments []entity.Installment
+	for rows.Next() {
+		var installment entity.Installment
+		err = rows.Scan(
+			&installment.ID,
+			&installment.Description,
+			&installment.Number,
+			&installment.Value,
+			&installment.Month,
+			&installment.Paid,
+			&installment.PurchaseID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning rows: %v", err)
+		}
+
+		installments = append(installments, installment)
+	}
+
+	return installments, nil
+}
+
+func (r *repositoryInstallment) FindByNotPaid() ([]entity.Installment, error) {
+	sql := `SELECT id, description, number, value, month, paid, purchase_id 
+			FROM installment 
+			WHERE paid = false`
+
+	stmt, err := r.db.Prepare(sql)
+	if err != nil {
+		return nil, fmt.Errorf("error preparing statement: %v", err)
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, fmt.Errorf("error executing statement: %v", err)
+	}
+
+	var installments []entity.Installment
+	for rows.Next() {
+		var installment entity.Installment
+		err = rows.Scan(
+			&installment.ID,
+			&installment.Description,
+			&installment.Number,
+			&installment.Value,
+			&installment.Month,
+			&installment.Paid,
+			&installment.PurchaseID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning rows: %v", err)
+		}
+		
+		installments = append(installments, installment)
+	}
+
+	return installments, nil
 }
 
 

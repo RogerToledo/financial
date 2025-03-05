@@ -61,17 +61,52 @@ func (p *Purchase) CreatePurchase(purchase entity.Purchase) error {
 }
 
 func (p *Purchase) UpdatePurchase(purchase entity.Purchase) error {
-	if err := p.repositoryPurchase.All().Purchase.Update(purchase); err != nil {
+	tx, err := p.repositoryPurchase.All().Purchase.BeginTransaction()
+	if err != nil {
+		return fmt.Errorf("error on begin transaction: %v", err)
+	}
+
+	if err := p.repositoryPurchase.All().Purchase.Update(tx, purchase); err != nil {
 		return err
 	}
+
+	purchase.Installment.PurchaseID = purchase.ID
+
+	ir := NewInstallmentUseCase(p.repositoryPurchase)
+	if err := ir.DeleteInstallment(purchase.ID); err != nil {
+		p.repositoryPurchase.All().Purchase.Rollback(tx)
+
+		return err
+	}	
+
+	if err := ir.CreateInstallment(purchase); err != nil {
+		p.repositoryPurchase.All().Purchase.Rollback(tx)
+
+		return err
+	}
+
+	p.repositoryPurchase.All().Purchase.Commit(tx)
 
 	return nil
 }
 
 func (p *Purchase) DeletePurchase(id uuid.UUID) error {
-	if err := p.repositoryPurchase.All().Purchase.Delete(id); err != nil {
+	tx, err := p.repositoryPurchase.All().Purchase.BeginTransaction()
+	if err != nil {
+		return fmt.Errorf("error on begin transaction: %v", err)
+	}
+
+ 	if err := p.repositoryPurchase.All().Purchase.Delete(tx, id); err != nil {
 		return err
 	}
+
+	ir := NewInstallmentUseCase(p.repositoryPurchase)
+	if err := ir.DeleteInstallment(id) ; err != nil {
+		p.repositoryPurchase.All().Purchase.Rollback(tx)
+		return err
+	}
+
+	p.repositoryPurchase.All().Purchase.Commit(tx)
 
 	return nil
 }
@@ -91,7 +126,7 @@ func (p *Purchase) FindPurchaseByDate(date string) (dto.PurchaseResponseTotal, e
 		return dto.PurchaseResponseTotal{}, err
 	}
 
-	response := processResponse(purchases)
+	response := processPurchaseResponse(purchases)
 
 	return response, err
 }
@@ -102,7 +137,7 @@ func (p *Purchase) FindPurchaseByMonth(date string) (dto.PurchaseResponseTotal, 
 		return dto.PurchaseResponseTotal{}, err
 	}
 
-	response := processResponse(purchases)
+	response := processPurchaseResponse(purchases)
 
 	return response, err
 }
@@ -113,7 +148,7 @@ func (p *Purchase) FindPurchaseByPerson(personID uuid.UUID) (dto.PurchaseRespons
 		return dto.PurchaseResponseTotal{}, err
 	}
 
-	response := processResponse(purchases)
+	response := processPurchaseResponse(purchases)
 
 	return response, err
 }
@@ -127,7 +162,7 @@ func (p *Purchase) FindAllPurchases() ([]dto.PurchaseResponse, error) {
 	return purchases, err
 }
 
-func processResponse(purchases []dto.PurchaseResponse) dto.PurchaseResponseTotal {
+func processPurchaseResponse(purchases []dto.PurchaseResponse) dto.PurchaseResponseTotal {
 	total := 0.0
 
 	for _, purchase := range purchases {
