@@ -63,7 +63,7 @@ ALTER TABLE purchase ADD CONSTRAINT purchase_purchase_type_fk FOREIGN KEY (id_pu
 CREATE TABLE installment (
 	id uuid NOT NULL,
 	description varchar(50) NOT NULL,
-	"month" numeric(10, 2) NOT NULL,
+	"month" date NOT NULL,
 	value numeric(10, 2) NOT NULL,
 	"number" int4 NOT NULL,
 	paid bool NULL,
